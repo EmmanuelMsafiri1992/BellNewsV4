@@ -1,0 +1,920 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>License Management - VCNS Timer Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f2f5;
+            color: #333;
+        }
+        .dashboard-container {
+            display: flex;
+            min-height: 100vh;
+        }
+        .sidebar {
+            width: 250px;
+            background: linear-gradient(180deg, #2a4365 0%, #1a202c 100%);
+            color: white;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+        }
+        .sidebar a {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            margin-bottom: 0.5rem;
+            border-radius: 0.5rem;
+            transition: background-color 0.2s, color 0.2s;
+            color: rgba(255,255,255,0.7);
+        }
+        .sidebar a:hover, .sidebar a.active {
+            background-color: rgba(255,255,255,0.1);
+            color: white;
+        }
+        .sidebar a i {
+            margin-right: 0.75rem;
+            font-size: 1.1rem;
+        }
+        .main-content {
+            flex-grow: 1;
+            padding: 2rem;
+            background-color: #f0f2f5;
+            display: flex;
+            flex-direction: column;
+        }
+        .glass {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .flash-message {
+            padding: 0.75rem 1.25rem;
+            margin-bottom: 1rem;
+            border-radius: 0.5rem;
+            font-weight: 500;
+            opacity: 0;
+            animation: fadeIn 0.5s forwards;
+        }
+        .flash-message.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .flash-message.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .flash-message.info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            width: 90%;
+            max-width: 500px;
+            position: relative;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="text-2xl font-bold text-white mb-8">VCNS Timer Pro</div>
+            <nav class="flex-grow">
+                <a href="{{ url_for('index') }}" class="flex items-center p-3 rounded-lg text-gray-300 hover:bg-gray-700">
+                    <i class="fas fa-tachometer-alt mr-3"></i> Dashboard
+                </a>
+                <a href="#" class="flex items-center p-3 rounded-lg text-gray-300 hover:bg-gray-700" onclick="showUserManagementModal()">
+                    <i class="fas fa-users-cog mr-3"></i> User Management
+                </a>
+                <a href="#" class="flex items-center p-3 rounded-lg text-gray-300 hover:bg-gray-700" onclick="showSystemSettingsModal()">
+                    <i class="fas fa-cogs mr-3"></i> System Settings
+                </a>
+                <a href="{{ url_for('admin_licenses') }}" class="active flex items-center p-3 rounded-lg text-gray-300 hover:bg-gray-700">
+                    <i class="fas fa-certificate mr-3"></i> License Management
+                </a>
+            </nav>
+            <div class="mt-auto">
+                <a href="{{ url_for('logout') }}" class="flex items-center p-3 rounded-lg text-red-300 hover:bg-red-700">
+                    <i class="fas fa-sign-out-alt mr-3"></i> Logout
+                </a>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <header class="flex justify-between items-center mb-8">
+                <h1 class="text-3xl font-bold text-gray-800">License Management</h1>
+                <div class="flex items-center space-x-4">
+                    <span class="text-gray-600">Welcome, {{ current_user.id }} ({{ current_user.role.capitalize() }})</span>
+                    <button onclick="showChangePasswordModal()" class="text-blue-600 hover:text-blue-800">
+                        <i class="fas fa-key mr-1"></i> Change Password
+                    </button>
+                </div>
+            </header>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="flash-message {{ category }}">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <!-- License Generation Section -->
+            <div class="glass rounded-2xl p-6 mb-8 fade-in">
+                <h2 class="text-2xl font-semibold text-gray-800 mb-4">Generate New License</h2>
+                <form id="generateLicenseForm" class="space-y-4">
+                    <div>
+                        <label for="expiry_date" class="block text-sm font-medium text-gray-700">Expiry Date</label>
+                        <input type="datetime-local" id="expiry_date" name="expiry_date" required
+                               class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                    </div>
+                    <div>
+                        <label for="assigned_to" class="block text-sm font-medium text-gray-700">Assigned To (Optional)</label>
+                        <input type="text" id="assigned_to" name="assigned_to"
+                               class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                               placeholder="Enter user ID (e.g., admin)">
+                    </div>
+                    <button type="submit"
+                            class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                        Generate License
+                    </button>
+                </form>
+            </div>
+
+            <!-- Existing Licenses Section -->
+            <div class="glass rounded-2xl p-6 fade-in">
+                <h2 class="text-2xl font-semibold text-gray-800 mb-4">Existing Licenses</h2>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">License Key</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created By</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created Date</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Expiry Date</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Assigned To</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            {% for license in licenses %}
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{{ license.license_key }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ license.created_by }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ license.created_date }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ license.expiry_date }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full
+                                        {% if license.status == 'active' %} bg-green-100 text-green-800
+                                        {% elif license.status == 'expired' %} bg-red-100 text-red-800
+                                        {% elif license.status == 'revoked' %} bg-yellow-100 text-yellow-800
+                                        {% else %} bg-gray-100 text-gray-800 {% endif %}">
+                                        {{ license.status.capitalize() }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ license.assigned_to if license.assigned_to else 'N/A' }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                    {% if license.status == 'active' %}
+                                    <button onclick="revokeLicense('{{ license.id }}')"
+                                            class="text-red-600 hover:text-red-900 ml-2">Revoke</button>
+                                    {% else %}
+                                    <span class="text-gray-400">N/A</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                            {% if not licenses %}
+                            <tr>
+                                <td colspan="7" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">No licenses generated yet.</td>
+                            </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Footer Section -->
+            <footer class="glass rounded-2xl p-6 mt-8 text-center fade-in">
+                <div class="flex items-center justify-center gap-2 text-gray-600">
+                    <i class="fas fa-copyright"></i>
+                    <span>Vcns Software Solutions, Contact Support: vcns@vsns.co.il, Mobile: +972524475438.</span>
+                </div>
+            </footer>
+        </div>
+    </div>
+
+    <!-- Modals (re-used from index.html, ensure they are present in bellscript.js or inline) -->
+    <!-- Change Password Modal -->
+    <div id="changePasswordModal" class="modal hidden">
+        <div class="modal-content">
+            <h3 class="text-xl font-semibold mb-4">Change Password</h3>
+            <form id="changePasswordForm" action="{{ url_for('change_password') }}" method="POST" class="space-y-4">
+                <div>
+                    <label for="current_password" class="block text-sm font-medium text-gray-700">Current Password</label>
+                    <input type="password" id="current_password" name="current_password" required
+                           class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm">
+                </div>
+                <div>
+                    <label for="new_password" class="block text-sm font-medium text-gray-700">New Password</label>
+                    <input type="password" id="new_password" name="new_password" required
+                           class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm">
+                </div>
+                <div>
+                    <label for="confirm_password" class="block text-sm font-medium text-gray-700">Confirm New Password</label>
+                    <input type="password" id="confirm_password" name="confirm_password" required
+                           class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm">
+                </div>
+                <div class="flex justify-end space-x-3">
+                    <button type="button" onclick="hideChangePasswordModal()"
+                            class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">
+                        Cancel
+                    </button>
+                    <button type="submit"
+                            class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700">
+                        Change Password
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- User Management Modal -->
+    <div id="userManagementModal" class="modal hidden">
+        <div class="modal-content">
+            <h3 class="text-xl font-semibold mb-4">User Management</h3>
+            <div class="flex border-b border-gray-200">
+                <button class="py-2 px-4 text-sm font-medium text-gray-600 border-b-2 border-transparent hover:border-blue-500"
+                        onclick="showUserManagementTab('resetPasswordView')">Reset Password</button>
+                <button class="py-2 px-4 text-sm font-medium text-gray-600 border-b-2 border-transparent hover:border-blue-500"
+                        onclick="showUserManagementTab('addUserView')">Add User</button>
+                <button class="py-2 px-4 text-sm font-medium text-gray-600 border-b-2 border-transparent hover:border-blue-500"
+                        onclick="showUserManagementTab('viewUsersView')">View Users</button>
+            </div>
+
+            <!-- Reset Password View -->
+            <div id="resetPasswordView" class="user-management-tab mt-4">
+                <h4 class="text-lg font-medium mb-3">Reset User Password</h4>
+                <form id="resetPasswordForm" action="{{ url_for('admin_reset_password') }}" method="POST" class="space-y-4">
+                    <div>
+                        <label for="reset_username" class="block text-sm font-medium text-gray-700">Username</label>
+                        <input type="text" id="reset_username" name="username" required
+                               class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm">
+                    </div>
+                    <div>
+                        <label for="reset_new_password" class="block text-sm font-medium text-gray-700">New Password</label>
+                        <input type="password" id="reset_new_password" name="new_password" required
+                               class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm">
+                    </div>
+                    <div>
+                        <label for="reset_confirm_password" class="block text-sm font-medium text-gray-700">Confirm New Password</label>
+                        <input type="password" id="reset_confirm_password" name="confirm_password" required
+                               class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm">
+                    </div>
+                    <div class="flex justify-end space-x-3">
+                        <button type="button" onclick="hideUserManagementModal()"
+                                class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">
+                            Cancel
+                        </button>
+                        <button type="submit"
+                                class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700">
+                            Reset Password
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Add User View -->
+            <div id="addUserView" class="user-management-tab mt-4 hidden">
+                <h4 class="text-lg font-medium mb-3">Add New User</h4>
+                <form id="addUserForm" action="{{ url_for('admin_add_user') }}" method="POST" class="space-y-4">
+                    <div>
+                        <label for="add_username" class="block text-sm font-medium text-gray-700">Username</label>
+                        <input type="text" id="add_username" name="username" required
+                               class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm">
+                    </div>
+                    <div>
+                        <label for="add_password" class="block text-sm font-medium text-gray-700">Password</label>
+                        <input type="password" id="add_password" name="password" required
+                               class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm">
+                    </div>
+                    <div>
+                        <label for="add_confirm_password" class="block text-sm font-medium text-gray-700">Confirm Password</label>
+                        <input type="password" id="add_confirm_password" name="confirm_password" required
+                               class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm">
+                    </div>
+                    <div>
+                        <label for="add_role" class="block text-sm font-medium text-gray-700">Role</label>
+                        <select id="add_role" name="role"
+                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm">
+                            <option value="admin">Admin</option>
+                            <option value="superuser">Superuser</option>
+                        </select>
+                    </div>
+                    <div class="flex justify-end space-x-3">
+                        <button type="button" onclick="hideUserManagementModal()"
+                                class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">
+                            Cancel
+                        </button>
+                        <button type="submit"
+                                class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700">
+                            Add User
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- View Users View -->
+            <div id="viewUsersView" class="user-management-tab mt-4 hidden">
+                <h4 class="text-lg font-medium mb-3">All Users</h4>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Username</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersTableBody" class="bg-white divide-y divide-gray-200">
+                            <!-- Users will be loaded here by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- System Settings Modal -->
+    <div id="systemSettingsModal" class="modal hidden">
+        <div class="modal-content">
+            <h3 class="text-xl font-semibold mb-4">System Settings</h3>
+            <div class="flex border-b border-gray-200">
+                <button class="py-2 px-4 text-sm font-medium text-gray-600 border-b-2 border-transparent hover:border-blue-500"
+                        onclick="showSystemSettingsTab('apiSettingsView')">API Settings</button>
+                <button class="py-2 px-4 text-sm font-medium text-gray-600 border-b-2 border-transparent hover:border-blue-500"
+                        onclick="showSystemSettingsTab('networkSettingsView')">Network Settings</button>
+                <button class="py-2 px-4 text-sm font-medium text-gray-600 border-b-2 border-transparent hover:border-blue-500"
+                        onclick="showSystemSettingsTab('timeSettingsView')">Time Settings</button>
+                <button class="py-2 px-4 text-sm font-medium text-gray-600 border-b-2 border-transparent hover:border-blue-500"
+                        onclick="showSystemSettingsTab('licenseInfoView')">License Info</button>
+                <button class="py-2 px-4 text-sm font-medium text-gray-600 border-b-2 border-transparent hover:border-blue-500"
+                        onclick="showSystemSettingsTab('licensedUsersView')">Licensed Users</button>
+            </div>
+
+            <!-- API Settings View -->
+            <div id="apiSettingsView" class="system-settings-tab mt-4">
+                <h4 class="text-lg font-medium mb-3">API Service Configuration</h4>
+                <form id="apiSettingsForm" class="space-y-4">
+                    <div>
+                        <label for="apiServiceUrl" class="block text-sm font-medium text-gray-700">API Service URL</label>
+                        <input type="url" id="apiServiceUrl" name="API_SERVICE_URL" required
+                               class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm"
+                               placeholder="e.g., http://localhost:5001">
+                    </div>
+                    <div class="flex justify-end space-x-3">
+                        <button type="button" onclick="hideSystemSettingsModal()"
+                                class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">
+                            Cancel
+                        </button>
+                        <button type="submit"
+                                class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700">
+                            Save API Settings
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Network Settings View -->
+            <div id="networkSettingsView" class="system-settings-tab mt-4 hidden">
+                <h4 class="text-lg font-medium mb-3">Network Configuration</h4>
+                <form id="networkSettingsForm" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">IP Type</label>
+                        <div class="mt-1 flex items-center space-x-4">
+                            <label class="inline-flex items-center">
+                                <input type="radio" name="ipType" value="dynamic" class="form-radio text-blue-600" checked>
+                                <span class="ml-2 text-gray-700">Dynamic (DHCP)</span>
+                            </label>
+                            <label class="inline-flex items-center">
+                                <input type="radio" name="ipType" value="static" class="form-radio text-blue-600">
+                                <span class="ml-2 text-gray-700">Static</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div id="staticIpFields" class="space-y-4 hidden">
+                        <div>
+                            <label for="ipAddress" class="block text-sm font-medium text-gray-700">IP Address</label>
+                            <input type="text" id="ipAddress" name="ipAddress"
+                                   class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm"
+                                   placeholder="e.g., 192.168.1.100">
+                        </div>
+                        <div>
+                            <label for="subnetMask" class="block text-sm font-medium text-gray-700">Subnet Mask</label>
+                            <input type="text" id="subnetMask" name="subnetMask"
+                                   class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm"
+                                   placeholder="e.g., 255.255.255.0">
+                        </div>
+                        <div>
+                            <label for="gateway" class="block text-sm font-medium text-gray-700">Gateway</label>
+                            <input type="text" id="gateway" name="gateway"
+                                   class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm"
+                                   placeholder="e.g., 192.168.1.1">
+                        </div>
+                        <div>
+                            <label for="dnsServer" class="block text-sm font-medium text-gray-700">DNS Server</label>
+                            <input type="text" id="dnsServer" name="dnsServer"
+                                   class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm"
+                                   placeholder="e.g., 8.8.8.8">
+                        </div>
+                    </div>
+                    <div class="flex justify-end space-x-3">
+                        <button type="button" onclick="hideSystemSettingsModal()"
+                                class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">
+                            Cancel
+                        </button>
+                        <button type="submit"
+                                class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700">
+                            Save Network Settings
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Time Settings View -->
+            <div id="timeSettingsView" class="system-settings-tab mt-4 hidden">
+                <h4 class="text-lg font-medium mb-3">Time Configuration</h4>
+                <form id="timeSettingsForm" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Time Synchronization</label>
+                        <div class="mt-1 flex items-center space-x-4">
+                            <label class="inline-flex items-center">
+                                <input type="radio" name="timeType" value="ntp" class="form-radio text-blue-600" checked>
+                                <span class="ml-2 text-gray-700">NTP (Network Time Protocol)</span>
+                            </label>
+                            <label class="inline-flex items-center">
+                                <input type="radio" name="timeType" value="manual" class="form-radio text-blue-600">
+                                <span class="ml-2 text-gray-700">Manual</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div id="ntpServerField">
+                        <label for="ntpServer" class="block text-sm font-medium text-gray-700">NTP Server</label>
+                        <input type="text" id="ntpServer" name="ntpServer"
+                               class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm"
+                               placeholder="e.g., pool.ntp.org">
+                    </div>
+                    <div id="manualTimeFields" class="space-y-4 hidden">
+                        <div>
+                            <label for="manualDate" class="block text-sm font-medium text-gray-700">Date</label>
+                            <input type="date" id="manualDate" name="manualDate"
+                                   class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm">
+                        </div>
+                        <div>
+                            <label for="manualTime" class="block text-sm font-medium text-gray-700">Time</label>
+                            <input type="time" id="manualTime" name="manualTime"
+                                   class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm">
+                        </div>
+                    </div>
+                    <div class="flex justify-end space-x-3">
+                        <button type="button" onclick="hideSystemSettingsModal()"
+                                class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">
+                            Cancel
+                        </button>
+                        <button type="submit"
+                                class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700">
+                            Save Time Settings
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- License Information View -->
+            <div id="licenseInfoView" class="system-settings-tab mt-4 hidden">
+                <h4 class="text-lg font-medium mb-3">System License Information</h4>
+                <div class="space-y-3 text-gray-700">
+                    <p><strong>License Key:</strong> <span id="displayLicenseKey" class="font-mono text-gray-900"></span></p>
+                    <p><strong>Expiry Date:</strong> <span id="displayExpiryDate"></span></p>
+                    <p><strong>Status:</strong> <span id="displayLicenseStatus" class="font-semibold"></span></p>
+                </div>
+                <h4 class="text-lg font-medium mb-3 mt-6">Update System License</h4>
+                <form id="updateSystemLicenseForm" class="space-y-4">
+                    <div>
+                        <label for="newLicenseKey" class="block text-sm font-medium text-gray-700">New License Key</label>
+                        <input type="text" id="newLicenseKey" name="licenseKey" required
+                               class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm"
+                               placeholder="Enter new system license key">
+                    </div>
+                    <div>
+                        <label for="newExpiryDate" class="block text-sm font-medium text-gray-700">New Expiry Date</label>
+                        <input type="datetime-local" id="newExpiryDate" name="expiryDate" required
+                               class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm">
+                    </div>
+                    <div class="flex justify-end space-x-3">
+                        <button type="submit"
+                                class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700">
+                            Update System License
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Licensed Users View -->
+            <div id="licensedUsersView" class="system-settings-tab mt-4 hidden">
+                <h4 class="text-lg font-medium mb-3">Users with Activated Features</h4>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User ID</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Activated At</th>
+                            </tr>
+                        </thead>
+                        <tbody id="licensedUsersTableBody" class="bg-white divide-y divide-gray-200">
+                            <!-- Licensed users will be loaded here by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+                <div id="noLicensedUsers" class="text-center py-6 hidden">
+                    <p class="text-gray-500">No users have activated premium features yet.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        // Flash message display logic (copy-pasted from bellscript.js for self-containment)
+        function showFlashMessage(message, category) {
+            const flashContainer = document.createElement('div');
+            flashContainer.className = `flash-message ${category} fixed top-4 right-4 z-50`;
+            flashContainer.textContent = message;
+            document.body.appendChild(flashContainer);
+
+            // Animate in
+            setTimeout(() => {
+                flashContainer.style.opacity = '1';
+                flashContainer.style.transform = 'translateY(0)';
+            }, 100);
+
+            // Animate out and remove
+            setTimeout(() => {
+                flashContainer.style.opacity = '0';
+                flashContainer.style.transform = 'translateY(-20px)';
+                flashContainer.addEventListener('transitionend', () => flashContainer.remove());
+            }, 5000);
+        }
+
+        // Modals management (copy-pasted from bellscript.js for self-containment)
+        function showChangePasswordModal() { document.getElementById('changePasswordModal').classList.remove('hidden'); }
+        function hideChangePasswordModal() { document.getElementById('changePasswordModal').classList.add('hidden'); }
+
+        function showUserManagementModal() {
+            document.getElementById('userManagementModal').classList.remove('hidden');
+            showUserManagementTab('resetPasswordView'); // Default to reset password tab
+            fetchUsers(); // Fetch users when modal opens
+        }
+        function hideUserManagementModal() { document.getElementById('userManagementModal').classList.add('hidden'); }
+
+        function showUserManagementTab(tabId) {
+            document.querySelectorAll('.user-management-tab').forEach(tab => tab.classList.add('hidden'));
+            document.getElementById(tabId).classList.remove('hidden');
+            // Update active state of buttons (optional, but good UX)
+            document.querySelectorAll('.user-management-tab + button').forEach(button => {
+                button.classList.remove('border-blue-500');
+                button.classList.add('border-transparent');
+            });
+            // This part needs adjustment if buttons are not direct siblings or have specific IDs
+        }
+
+        function showSystemSettingsModal() {
+            document.getElementById('systemSettingsModal').classList.remove('hidden');
+            showSystemSettingsTab('apiSettingsView'); // Default to API settings tab
+            fetchSystemSettings(); // Fetch settings when modal opens
+        }
+        function hideSystemSettingsModal() { document.getElementById('systemSettingsModal').classList.add('hidden'); }
+
+        function showSystemSettingsTab(tabId) {
+            document.querySelectorAll('.system-settings-tab').forEach(tab => tab.classList.add('hidden'));
+            document.getElementById(tabId).classList.remove('hidden');
+            // Logic for static/dynamic IP fields
+            if (tabId === 'networkSettingsView') {
+                const ipTypeRadios = document.querySelectorAll('input[name="ipType"]');
+                const staticIpFields = document.getElementById('staticIpFields');
+                ipTypeRadios.forEach(radio => {
+                    radio.addEventListener('change', () => {
+                        if (radio.value === 'static') {
+                            staticIpFields.classList.remove('hidden');
+                        } else {
+                            staticIpFields.classList.add('hidden');
+                        }
+                    });
+                });
+                // Set initial state based on current settings
+                const currentIpType = document.querySelector('input[name="ipType"]:checked').value;
+                if (currentIpType === 'static') {
+                    staticIpFields.classList.remove('hidden');
+                } else {
+                    staticIpFields.classList.add('hidden');
+                }
+            }
+            // Logic for NTP/Manual Time fields
+            if (tabId === 'timeSettingsView') {
+                const timeTypeRadios = document.querySelectorAll('input[name="timeType"]');
+                const ntpServerField = document.getElementById('ntpServerField');
+                const manualTimeFields = document.getElementById('manualTimeFields');
+                timeTypeRadios.forEach(radio => {
+                    radio.addEventListener('change', () => {
+                        if (radio.value === 'manual') {
+                            manualTimeFields.classList.remove('hidden');
+                            ntpServerField.classList.add('hidden');
+                        } else {
+                            manualTimeFields.classList.add('hidden');
+                            ntpServerField.classList.remove('hidden');
+                        }
+                    });
+                });
+                // Set initial state based on current settings
+                const currentTimeType = document.querySelector('input[name="timeType"]:checked').value;
+                if (currentTimeType === 'manual') {
+                    manualTimeFields.classList.remove('hidden');
+                    ntpServerField.classList.add('hidden');
+                } else {
+                    manualTimeFields.classList.add('hidden');
+                    ntpServerField.classList.remove('hidden');
+                }
+            }
+        }
+
+        // Fetch System Settings (API, Network, Time, License Info)
+        async function fetchSystemSettings() {
+            try {
+                const response = await fetch('/api/system_settings');
+                const data = await response.json();
+
+                if (response.ok) {
+                    // Populate API Settings
+                    document.getElementById('apiServiceUrl').value = data.API_SERVICE_URL || '';
+
+                    // Populate Network Settings
+                    document.querySelector(`input[name="ipType"][value="${data.networkSettings.ipType}"]`).checked = true;
+                    document.getElementById('ipAddress').value = data.networkSettings.ipAddress || '';
+                    document.getElementById('subnetMask').value = data.networkSettings.subnetMask || '';
+                    document.getElementById('gateway').value = data.networkSettings.gateway || '';
+                    document.getElementById('dnsServer').value = data.networkSettings.dnsServer || '';
+                    // Trigger change to show/hide static IP fields
+                    document.querySelector(`input[name="ipType"][value="${data.networkSettings.ipType}"]`).dispatchEvent(new Event('change'));
+
+                    // Populate Time Settings
+                    document.querySelector(`input[name="timeType"][value="${data.timeSettings.timeType}"]`).checked = true;
+                    document.getElementById('ntpServer').value = data.timeSettings.ntpServer || '';
+                    document.getElementById('manualDate').value = data.timeSettings.manualDate || '';
+                    document.getElementById('manualTime').value = data.timeSettings.manualTime || '';
+                    // Trigger change to show/hide manual time fields
+                    document.querySelector(`input[name="timeType"][value="${data.timeSettings.timeType}"]`).dispatchEvent(new Event('change'));
+
+                    // Populate License Info
+                    document.getElementById('displayLicenseKey').textContent = data.license.key || 'N/A';
+                    document.getElementById('displayExpiryDate').textContent = data.license.expiry ? new Date(data.license.expiry).toLocaleString() : 'N/A';
+                    const licenseStatusElement = document.getElementById('displayLicenseStatus');
+                    licenseStatusElement.textContent = (data.license.status || 'N/A').toUpperCase();
+                    licenseStatusElement.className = 'font-semibold ' + (data.license.status === 'active' ? 'text-green-600' : 'text-red-600');
+
+                    // Populate Licensed Users
+                    const licensedUsersTableBody = document.getElementById('licensedUsersTableBody');
+                    licensedUsersTableBody.innerHTML = ''; // Clear previous entries
+                    const noLicensedUsers = document.getElementById('noLicensedUsers');
+
+                    if (data.licensedUsers && data.licensedUsers.length > 0) {
+                        noLicensedUsers.classList.add('hidden');
+                        data.licensedUsers.forEach(user => {
+                            const row = licensedUsersTableBody.insertRow();
+                            row.innerHTML = `
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${user.user_id}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${new Date(user.activated_at).toLocaleString()}</td>
+                            `;
+                        });
+                    } else {
+                        noLicensedUsers.classList.remove('hidden');
+                    }
+
+                } else {
+                    showFlashMessage(data.message || "Failed to fetch system settings.", "error");
+                }
+            } catch (error) {
+                console.error("Error fetching system settings:", error);
+                showFlashMessage("Network error when fetching system settings.", "error");
+            }
+        }
+
+        // Handle form submissions for system settings
+        document.getElementById('apiSettingsForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            const formData = new FormData(this);
+            const data = Object.fromEntries(formData.entries());
+            
+            try {
+                const response = await fetch('/api/system_settings', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                const result = await response.json();
+                if (response.ok && result.status === 'success') {
+                    showFlashMessage(result.message, "success");
+                    fetchSystemSettings(); // Refresh settings display
+                } else {
+                    showFlashMessage(result.message || "Failed to save API settings.", "error");
+                }
+            } catch (error) {
+                console.error("API settings fetch error:", error);
+                showFlashMessage("Network error during API settings update.", "error");
+            }
+        });
+
+        document.getElementById('networkSettingsForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            const formData = new FormData(this);
+            const data = Object.fromEntries(formData.entries());
+            // Nest network settings under 'networkSettings' key
+            const payload = { networkSettings: data };
+
+            try {
+                const response = await fetch('/api/system_settings', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const result = await response.json();
+                if (response.ok && result.status === 'success') {
+                    showFlashMessage(result.message, "success");
+                    fetchSystemSettings(); // Refresh settings display
+                } else {
+                    showFlashMessage(result.message || "Failed to save network settings.", "error");
+                }
+            } catch (error) {
+                console.error("Network settings fetch error:", error);
+                showFlashMessage("Network error during network settings update.", "error");
+            }
+        });
+
+        document.getElementById('timeSettingsForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            const formData = new FormData(this);
+            const data = Object.fromEntries(formData.entries());
+            // Nest time settings under 'timeSettings' key
+            const payload = { timeSettings: data };
+
+            try {
+                const response = await fetch('/api/system_settings', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const result = await response.json();
+                if (response.ok && result.status === 'success') {
+                    showFlashMessage(result.message, "success");
+                    fetchSystemSettings(); // Refresh settings display
+                } else {
+                    showFlashMessage(result.message || "Failed to save time settings.", "error");
+                }
+            } catch (error) {
+                console.error("Time settings fetch error:", error);
+                showFlashMessage("Network error during time settings update.", "error");
+            }
+        });
+
+        document.getElementById('updateSystemLicenseForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            const formData = new FormData(this);
+            const data = Object.fromEntries(formData.entries());
+            
+            try {
+                const response = await fetch('/api/license', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                const result = await response.json();
+                if (response.ok && result.status === 'success') {
+                    showFlashMessage(result.message, "success");
+                    fetchSystemSettings(); // Refresh license info display
+                } else {
+                    showFlashMessage(result.message || "Failed to update system license.", "error");
+                }
+            } catch (error) {
+                console.error("Update system license fetch error:", error);
+                showFlashMessage("Network error during system license update.", "error");
+            }
+        });
+
+        // Fetch users for User Management Modal
+        async function fetchUsers() {
+            try {
+                const response = await fetch('/api/users');
+                const data = await response.json();
+                const usersTableBody = document.getElementById('usersTableBody');
+                usersTableBody.innerHTML = ''; // Clear existing rows
+
+                if (response.ok && data.users && data.users.length > 0) {
+                    data.users.forEach(user => {
+                        const row = usersTableBody.insertRow();
+                        row.innerHTML = `
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${user.username}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${user.role.charAt(0).toUpperCase() + user.role.slice(1)}</td>
+                        `;
+                    });
+                } else {
+                    usersTableBody.innerHTML = `<tr><td colspan="2" class="px-6 py-4 text-center text-sm text-gray-500">No users found.</td></tr>`;
+                }
+            } catch (error) {
+                console.error("Error fetching users:", error);
+                showFlashMessage("Network error when fetching user list.", "error");
+            }
+        }
+
+        // Handle Generate License Form submission
+        document.getElementById('generateLicenseForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            const formData = new FormData(this);
+            const data = Object.fromEntries(formData.entries());
+
+            try {
+                const response = await fetch('/api/licenses/generate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                const result = await response.json();
+                if (response.ok && result.status === 'success') {
+                    showFlashMessage(result.message, "success");
+                    // Refresh the list of licenses on the page
+                    window.location.reload(); // Simple reload for now, can be optimized
+                } else {
+                    showFlashMessage(result.message || "Failed to generate license.", "error");
+                }
+            } catch (error) {
+                console.error("Generate license fetch error:", error);
+                showFlashMessage("Network error during license generation.", "error");
+            }
+        });
+
+        // Handle Revoke License action
+        async function revokeLicense(licenseId) {
+            if (!confirm('Are you sure you want to revoke this license? This action cannot be undone.')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/licenses/revoke/${licenseId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                const result = await response.json();
+                if (response.ok && result.status === 'success') {
+                    showFlashMessage(result.message, "success");
+                    window.location.reload(); // Simple reload to reflect changes
+                } else {
+                    showFlashMessage(result.message || "Failed to revoke license.", "error");
+                }
+            } catch (error) {
+                console.error("Revoke license fetch error:", error);
+                showFlashMessage("Network error during license revocation.", "error");
+            }
+        }
+    </script>
+</body>
+</html>

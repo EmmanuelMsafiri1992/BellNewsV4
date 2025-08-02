@@ -1,0 +1,17 @@
+
+##############for development #########################
+docker compose -f docker-compose.dev.yml down --volumes --rmi all
+docker compose -f docker-compose.dev.yml up --build -d
+
+
+###############for production #########################
+docker compose -f docker-compose.prod.yml down --volumes --rmi all
+docker compose -f docker-compose.prod.yml up --build -d    
+
+
+###########If any errors check ##############
+docker logs config_service
+docker logs bellapp
+
+
+

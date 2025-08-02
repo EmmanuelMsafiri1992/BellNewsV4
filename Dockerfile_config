@@ -1,0 +1,47 @@
+# Dockerfile for the Ubuntu Configuration Service (ubuntu_config_service.py)
+
+# Use a lean Python base image.
+# systemd-timesyncd and netplan.io are not needed if commands are mocked.
+FROM python:3.9-slim
+
+# Set the working directory in the container
+WORKDIR /app
+
+# Install build dependencies (needed for psutil compilation)
+RUN apt-get update && apt-get install -y \
+    gcc \
+    python3-dev \
+    build-essential \
+    libc-dev \
+    make \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install pyyaml for Netplan YAML generation (needed even in mock mode for structure)
+RUN pip install --no-cache-dir pyyaml
+
+# Copy the application code and requirements
+COPY ubuntu_config_service.py .
+COPY requirements.txt .
+
+# Install other Python dependencies from requirements.txt
+# (Flask, requests, psutil, etc. if they are in there)
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Clean up build dependencies after installation to reduce image size
+RUN apt-get update && apt-get purge -y \
+    gcc \
+    python3-dev \
+    build-essential \
+    libc-dev \
+    make \
+    && apt-get autoremove -y \
+    && rm -rf /var/lib/apt/lists/*
+
+# Expose the port the Flask app will run on
+EXPOSE 5002
+
+# Set environment variable for unbuffered Python output
+ENV PYTHONUNBUFFERED=1
+
+# Command to run the Flask application
+CMD ["python", "-u", "ubuntu_config_service.py"]

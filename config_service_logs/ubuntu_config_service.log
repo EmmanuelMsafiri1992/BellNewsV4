@@ -1,0 +1,256 @@
+2025-07-18 07:55:37,011 - INFO - Starting Ubuntu Configuration Service...
+2025-07-18 07:55:37,089 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5002
+ * Running on http://172.18.0.2:5002
+2025-07-18 07:55:37,090 - INFO - [33mPress CTRL+C to quit[0m
+2025-07-18 08:00:40,223 - INFO - Starting Ubuntu Configuration Service...
+2025-07-18 08:00:40,269 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5002
+ * Running on http://172.18.0.2:5002
+2025-07-18 08:00:40,283 - INFO - [33mPress CTRL+C to quit[0m
+2025-07-18 08:04:32,632 - INFO - 172.18.0.1 - - [18/Jul/2025 08:04:32] "[33mGET / HTTP/1.1[0m" 404 -
+2025-07-18 08:10:11,179 - INFO - Starting Ubuntu Configuration Service...
+2025-07-18 08:10:11,213 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5002
+ * Running on http://172.18.0.2:5002
+2025-07-18 08:10:11,217 - INFO - [33mPress CTRL+C to quit[0m
+2025-07-18 08:20:54,080 - INFO - Starting Ubuntu Configuration Service...
+2025-07-18 08:20:54,124 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5002
+ * Running on http://172.18.0.2:5002
+2025-07-18 08:20:54,129 - INFO - [33mPress CTRL+C to quit[0m
+2025-07-18 08:44:11,289 - INFO - Starting Ubuntu Configuration Service...
+2025-07-18 08:44:11,314 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5002
+ * Running on http://172.18.0.2:5002
+2025-07-18 08:44:11,316 - INFO - [33mPress CTRL+C to quit[0m
+2025-07-18 08:50:21,827 - INFO - Starting Ubuntu Configuration Service...
+2025-07-18 08:50:21,878 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5002
+ * Running on http://172.18.0.2:5002
+2025-07-18 08:50:21,889 - INFO - [33mPress CTRL+C to quit[0m
+2025-07-18 09:00:31,023 - INFO - Starting Ubuntu Configuration Service...
+2025-07-18 09:00:31,062 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5002
+ * Running on http://172.18.0.2:5002
+2025-07-18 09:00:31,064 - INFO - [33mPress CTRL+C to quit[0m
+2025-07-18 09:04:32,419 - INFO - Received network configuration request: {'ipType': 'static', 'ipAddress': '192.168.1.75', 'subnetMask': '255.255.255.0', 'gateway': '192.168.1.1', 'dnsServer': ''}
+2025-07-18 09:04:32,423 - INFO - Network type set to static. IP: 192.168.1.75, Subnet: 255.255.255.0, Gateway: 192.168.1.1, DNS: 
+2025-07-18 09:04:32,424 - WARNING - Applying static IP on Ubuntu dynamically requires modifying Netplan configuration files and applying them. This service currently only logs the intent.
+2025-07-18 09:04:32,429 - WARNING - You would typically create/modify a file like /etc/netplan/01-network-config.yaml and then run 'sudo netplan apply'.
+2025-07-18 09:04:32,431 - INFO - 172.18.0.1 - - [18/Jul/2025 09:04:32] "POST /apply_network_settings HTTP/1.1" 200 -
+2025-07-18 09:04:32,463 - INFO - Setting time synchronization to NTP with server: pool.ntp.org
+2025-07-18 09:04:32,464 - INFO - Executing command: sudo timedatectl set-ntp false
+2025-07-18 09:04:32,545 - ERROR - Command not found. Ensure 'sudo' is in PATH and installed.
+2025-07-18 09:04:32,569 - ERROR - Failed to disable NTP: Command 'sudo' not found. Is it installed and in PATH?
+2025-07-18 09:04:32,585 - INFO - 172.18.0.1 - - [18/Jul/2025 09:04:32] "[35m[1mPOST /apply_time_settings HTTP/1.1[0m" 500 -
+2025-07-18 09:13:05,397 - INFO - Starting Ubuntu Configuration Service...
+2025-07-18 09:13:05,455 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5002
+ * Running on http://172.18.0.2:5002
+2025-07-18 09:13:05,456 - INFO - [33mPress CTRL+C to quit[0m
+2025-07-18 09:14:40,861 - INFO - 172.18.0.1 - - [18/Jul/2025 09:14:40] "[33mGET / HTTP/1.1[0m" 404 -
+2025-07-18 09:14:41,915 - INFO - 172.18.0.1 - - [18/Jul/2025 09:14:41] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-07-18 09:15:06,763 - INFO - Received network configuration request: {'ipType': 'static', 'ipAddress': '192.168.1.75', 'subnetMask': '255.255.255.0', 'gateway': '192.168.1.1', 'dnsServer': ''}
+2025-07-18 09:15:06,765 - INFO - Network type set to static. IP: 192.168.1.75, Subnet: 255.255.255.0, Gateway: 192.168.1.1, DNS: 
+2025-07-18 09:15:06,766 - WARNING - Applying static IP on Ubuntu dynamically requires modifying Netplan configuration files and applying them. This service currently only logs the intent.
+2025-07-18 09:15:06,766 - WARNING - You would typically create/modify a file like /etc/netplan/01-network-config.yaml and then run 'sudo netplan apply'.
+2025-07-18 09:15:06,767 - INFO - 172.18.0.1 - - [18/Jul/2025 09:15:06] "POST /apply_network_settings HTTP/1.1" 200 -
+2025-07-18 09:15:06,787 - INFO - Received time configuration request: {'timeType': 'ntp', 'ntpServer': 'pool.ntp.org', 'manualDate': '', 'manualTime': ''}
+2025-07-18 09:15:06,787 - INFO - Setting time synchronization to NTP with server: pool.ntp.org
+2025-07-18 09:15:06,788 - INFO - Executing command: timedatectl set-ntp false
+2025-07-18 09:15:07,008 - ERROR - Failed to disable NTP: Command 'timedatectl' not found. Is it installed and in PATH?
+2025-07-18 09:15:07,010 - INFO - 172.18.0.1 - - [18/Jul/2025 09:15:07] "[35m[1mPOST /apply_time_settings HTTP/1.1[0m" 500 -
+2025-07-18 09:35:21,439 - INFO - Starting Ubuntu Configuration Service...
+2025-07-18 09:35:21,480 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5002
+ * Running on http://172.18.0.2:5002
+2025-07-18 09:35:21,482 - INFO - [33mPress CTRL+C to quit[0m
+2025-07-18 09:36:21,985 - INFO - Received network configuration request: {'ipType': 'static', 'ipAddress': '192.168.1.75', 'subnetMask': '255.255.255.0', 'gateway': '192.168.1.1', 'dnsServer': ''}
+2025-07-18 09:36:21,987 - INFO - Network type set to static. IP: 192.168.1.75, Subnet: 255.255.255.0, Gateway: 192.168.1.1, DNS: 
+2025-07-18 09:36:21,988 - WARNING - Applying static IP on Ubuntu dynamically requires modifying Netplan configuration files and applying them. This service currently only logs the intent.
+2025-07-18 09:36:21,989 - WARNING - You would typically create/modify a file like /etc/netplan/01-network-config.yaml and then run 'sudo netplan apply'.
+2025-07-18 09:36:21,995 - INFO - 172.18.0.1 - - [18/Jul/2025 09:36:21] "POST /apply_network_settings HTTP/1.1" 200 -
+2025-07-18 09:36:22,036 - INFO - Received time configuration request: {'timeType': 'ntp', 'ntpServer': 'pool.ntp.org', 'manualDate': '', 'manualTime': ''}
+2025-07-18 09:36:22,037 - INFO - Setting time synchronization to NTP with server: pool.ntp.org
+2025-07-18 09:36:22,039 - INFO - Executing command: timedatectl set-ntp false
+2025-07-18 09:36:22,094 - ERROR - Exception on /apply_time_settings [POST]
+Traceback (most recent call last):
+  File "/app/ubuntu_config_service.py", line 66, in run_command
+    subprocess.run(command_list, check=True)
+  File "/usr/local/lib/python3.9/subprocess.py", line 528, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['timedatectl', 'set-ntp', 'false']' returned non-zero exit status 1.
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.9/site-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/usr/local/lib/python3.9/site-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/usr/local/lib/python3.9/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/usr/local/lib/python3.9/site-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+  File "/app/ubuntu_config_service.py", line 179, in apply_time_settings
+    success_disable, error_disable = run_command(['timedatectl', 'set-ntp', 'false'])
+  File "/app/ubuntu_config_service.py", line 69, in run_command
+    error_output = e.stderr.strip() if e.stderr else e.stdout.strip()
+AttributeError: 'NoneType' object has no attribute 'strip'
+2025-07-18 09:36:22,106 - INFO - 172.18.0.1 - - [18/Jul/2025 09:36:22] "[35m[1mPOST /apply_time_settings HTTP/1.1[0m" 500 -
+2025-07-18 10:00:36,359 - WARNING - Running in Docker Test Mode: timedatectl commands will be mocked.
+2025-07-18 10:00:36,369 - INFO - Starting Ubuntu Configuration Service...
+2025-07-18 10:00:36,436 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5002
+ * Running on http://172.18.0.2:5002
+2025-07-18 10:00:36,442 - INFO - [33mPress CTRL+C to quit[0m
+2025-07-18 10:00:56,359 - INFO - 172.18.0.1 - - [18/Jul/2025 10:00:56] "[33mGET / HTTP/1.1[0m" 404 -
+2025-07-18 10:01:26,529 - INFO - Received network configuration request: {'ipType': 'static', 'ipAddress': '192.168.1.75', 'subnetMask': '255.255.255.0', 'gateway': '192.168.1.1', 'dnsServer': ''}
+2025-07-18 10:01:26,530 - INFO - Network type set to static. IP: 192.168.1.75, Subnet: 255.255.255.0, Gateway: 192.168.1.1, DNS: 
+2025-07-18 10:01:26,531 - WARNING - Applying static IP on Ubuntu dynamically requires modifying Netplan configuration files and applying them. This service currently only logs the intent.
+2025-07-18 10:01:26,531 - WARNING - You would typically create/modify a file like /etc/netplan/01-network-config.yaml and then run 'sudo netplan apply'.
+2025-07-18 10:01:26,532 - INFO - 172.18.0.1 - - [18/Jul/2025 10:01:26] "POST /apply_network_settings HTTP/1.1" 200 -
+2025-07-18 10:01:26,560 - INFO - Received time configuration request: {'timeType': 'ntp', 'ntpServer': 'pool.ntp.org', 'manualDate': '', 'manualTime': ''}
+2025-07-18 10:01:26,561 - INFO - Setting time synchronization to NTP with server: pool.ntp.org
+2025-07-18 10:01:26,561 - INFO - Executing command: timedatectl set-ntp false
+2025-07-18 10:01:26,562 - INFO - Mocked: timedatectl set-ntp false - This command would normally run on a full Ubuntu OS.
+2025-07-18 10:01:26,562 - INFO - Executing command: timedatectl set-ntp true
+2025-07-18 10:01:26,563 - INFO - Mocked: timedatectl set-ntp true - This command would normally run on a full Ubuntu OS.
+2025-07-18 10:01:26,563 - INFO - NTP synchronization enabled.
+2025-07-18 10:01:26,564 - INFO - 172.18.0.1 - - [18/Jul/2025 10:01:26] "POST /apply_time_settings HTTP/1.1" 200 -
+2025-07-18 11:50:13,966 - INFO - Starting Ubuntu Configuration Service...
+2025-07-18 11:50:15,646 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5002
+ * Running on http://192.168.65.3:5002
+2025-07-18 11:50:15,808 - INFO - [33mPress CTRL+C to quit[0m
+2025-07-18 12:29:29,938 - INFO - Starting Ubuntu Configuration Service...
+2025-07-18 12:29:31,085 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5002
+ * Running on http://192.168.65.3:5002
+2025-07-18 12:29:31,086 - INFO - [33mPress CTRL+C to quit[0m
+2025-07-18 13:06:55,135 - WARNING - Running in Docker Test Mode: timedatectl and netplan commands will be mocked.
+2025-07-18 13:06:55,141 - INFO - Starting Ubuntu Configuration Service...
+2025-07-18 13:06:55,290 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5002
+ * Running on http://172.18.0.2:5002
+2025-07-18 13:06:55,295 - INFO - [33mPress CTRL+C to quit[0m
+2025-07-18 13:09:28,518 - INFO - Received network configuration request: {'ipType': 'static', 'ipAddress': '192.168.1.75', 'subnetMask': '255.255.255.0', 'gateway': '192.168.1.1', 'dnsServer': ''}
+2025-07-18 13:09:28,525 - INFO - Detected primary network interface: eth0
+2025-07-18 13:09:28,526 - INFO - Generated Netplan YAML for static IP 192.168.1.75/24 on eth0.
+2025-07-18 13:09:28,531 - INFO - Netplan configuration written to /etc/netplan/01-vcns-network.yaml
+2025-07-18 13:09:28,531 - INFO - Executing command: netplan apply
+2025-07-18 13:09:28,532 - INFO - Mocked: netplan apply - This command would normally run on a full Ubuntu OS.
+2025-07-18 13:09:28,532 - INFO - Netplan configuration applied successfully.
+2025-07-18 13:09:28,533 - INFO - Network settings applied: Netplan configuration applied successfully.
+2025-07-18 13:09:28,535 - INFO - 172.18.0.3 - - [18/Jul/2025 13:09:28] "POST /apply_network_settings HTTP/1.1" 200 -
+2025-07-18 13:09:28,606 - INFO - Received time configuration request: {'timeType': 'ntp', 'ntpServer': 'pool.ntp.org', 'manualDate': '', 'manualTime': ''}
+2025-07-18 13:09:28,606 - INFO - Setting time synchronization to NTP with server: pool.ntp.org
+2025-07-18 13:09:28,607 - INFO - Executing command: timedatectl set-ntp false
+2025-07-18 13:09:28,608 - INFO - Mocked: timedatectl set-ntp false - This command would normally run on a full Ubuntu OS.
+2025-07-18 13:09:28,608 - INFO - Executing command: timedatectl set-ntp true
+2025-07-18 13:09:28,609 - INFO - Mocked: timedatectl set-ntp true - This command would normally run on a full Ubuntu OS.
+2025-07-18 13:09:28,609 - INFO - NTP synchronization enabled.
+2025-07-18 13:09:28,610 - INFO - 172.18.0.3 - - [18/Jul/2025 13:09:28] "POST /apply_time_settings HTTP/1.1" 200 -
+2025-07-18 13:15:41,887 - INFO - Received network configuration request: {'ipType': 'static', 'ipAddress': '192.168.1.75', 'subnetMask': '255.255.255.0', 'gateway': '192.168.1.1', 'dnsServer': ''}
+2025-07-18 13:15:41,889 - INFO - Detected primary network interface: eth0
+2025-07-18 13:15:41,890 - INFO - Generated Netplan YAML for static IP 192.168.1.75/24 on eth0.
+2025-07-18 13:15:41,902 - INFO - Netplan configuration written to /etc/netplan/01-vcns-network.yaml
+2025-07-18 13:15:41,903 - INFO - Executing command: netplan apply
+2025-07-18 13:15:41,904 - INFO - Mocked: netplan apply - This command would normally run on a full Ubuntu OS.
+2025-07-18 13:15:41,912 - INFO - Netplan configuration applied successfully.
+2025-07-18 13:15:41,913 - INFO - Network settings applied: Netplan configuration applied successfully.
+2025-07-18 13:15:41,933 - INFO - 172.18.0.3 - - [18/Jul/2025 13:15:41] "POST /apply_network_settings HTTP/1.1" 200 -
+2025-07-18 13:15:41,947 - INFO - Received time configuration request: {'timeType': 'manual', 'ntpServer': '', 'manualDate': '2025-07-19', 'manualTime': '15:18'}
+2025-07-18 13:15:42,542 - INFO - Setting manual time to: 2025-07-19 15:18
+2025-07-18 13:15:42,543 - INFO - Executing command: timedatectl set-ntp false
+2025-07-18 13:15:42,544 - INFO - Mocked: timedatectl set-ntp false - This command would normally run on a full Ubuntu OS.
+2025-07-18 13:15:42,545 - INFO - Executing command: timedatectl set-time 2025-07-19 15:18:00
+2025-07-18 13:15:42,546 - INFO - Mocked: timedatectl set-time 2025-07-19 15:18:00 - This command would normally run on a full Ubuntu OS.
+2025-07-18 13:15:42,547 - INFO - Manual time set successfully.
+2025-07-18 13:15:42,549 - INFO - 172.18.0.3 - - [18/Jul/2025 13:15:42] "POST /apply_time_settings HTTP/1.1" 200 -
+2025-07-18 13:24:48,144 - INFO - Received network configuration request: {'ipType': 'static', 'ipAddress': '192.168.1.75', 'subnetMask': '255.255.255.0', 'gateway': '192.168.1.1', 'dnsServer': ''}
+2025-07-18 13:24:48,145 - INFO - Detected primary network interface: eth0
+2025-07-18 13:24:48,146 - INFO - Generated Netplan YAML for static IP 192.168.1.75/24 on eth0.
+2025-07-18 13:24:48,150 - INFO - Netplan configuration written to /etc/netplan/01-vcns-network.yaml
+2025-07-18 13:24:48,150 - INFO - Executing command: netplan apply
+2025-07-18 13:24:48,151 - INFO - Mocked: netplan apply - This command would normally run on a full Ubuntu OS.
+2025-07-18 13:24:48,152 - INFO - Netplan configuration applied successfully.
+2025-07-18 13:24:48,152 - INFO - Network settings applied: Netplan configuration applied successfully.
+2025-07-18 13:24:48,153 - INFO - 172.18.0.3 - - [18/Jul/2025 13:24:48] "POST /apply_network_settings HTTP/1.1" 200 -
+2025-07-18 13:24:48,164 - INFO - Received time configuration request: {'timeType': 'manual', 'ntpServer': '', 'manualDate': '2025-07-19', 'manualTime': '15:23'}
+2025-07-18 13:24:48,165 - INFO - Setting manual time to: 2025-07-19 15:23
+2025-07-18 13:24:48,166 - INFO - Executing command: timedatectl set-ntp false
+2025-07-18 13:24:48,167 - INFO - Mocked: timedatectl set-ntp false - This command would normally run on a full Ubuntu OS.
+2025-07-18 13:24:48,167 - INFO - Executing command: timedatectl set-time 2025-07-19 15:23:00
+2025-07-18 13:24:48,168 - INFO - Mocked: timedatectl set-time 2025-07-19 15:23:00 - This command would normally run on a full Ubuntu OS.
+2025-07-18 13:24:48,169 - INFO - Manual time set successfully.
+2025-07-18 13:24:48,170 - INFO - 172.18.0.3 - - [18/Jul/2025 13:24:48] "POST /apply_time_settings HTTP/1.1" 200 -
+2025-07-27 21:52:53,753 - WARNING - Running in Docker Test Mode: timedatectl and netplan commands will be mocked.
+2025-07-27 21:52:53,756 - INFO - Starting Ubuntu Configuration Service...
+2025-07-27 21:52:53,848 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5002
+ * Running on http://172.18.0.2:5002
+2025-07-27 21:52:53,849 - INFO - [33mPress CTRL+C to quit[0m
+2025-08-02 07:46:22,042 - WARNING - Running in Docker Test Mode: timedatectl and netplan commands will be mocked.
+2025-08-02 07:46:22,112 - INFO - Starting Ubuntu Configuration Service...
+2025-08-02 07:46:22,363 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5002
+ * Running on http://172.18.0.3:5002
+2025-08-02 07:46:22,365 - INFO - [33mPress CTRL+C to quit[0m
+2025-08-02 07:47:23,605 - WARNING - Running in Docker Test Mode: timedatectl and netplan commands will be mocked.
+2025-08-02 07:47:23,639 - INFO - Starting Ubuntu Configuration Service...
+2025-08-02 07:47:23,691 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5002
+ * Running on http://172.18.0.2:5002
+2025-08-02 07:47:23,694 - INFO - [33mPress CTRL+C to quit[0m
+2025-08-02 07:54:41,954 - WARNING - Running in Docker Test Mode: timedatectl and netplan commands will be mocked.
+2025-08-02 07:54:41,958 - INFO - Starting Ubuntu Configuration Service...
+2025-08-02 07:54:42,025 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5002
+ * Running on http://172.18.0.2:5002
+2025-08-02 07:54:42,031 - INFO - [33mPress CTRL+C to quit[0m
+2025-08-02 09:06:06,434 - WARNING - Running in Docker Test Mode: timedatectl and netplan commands will be mocked.
+2025-08-02 09:06:06,492 - INFO - Starting Ubuntu Configuration Service...
+2025-08-02 09:06:06,631 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5002
+ * Running on http://172.18.0.2:5002
+2025-08-02 09:06:06,655 - INFO - [33mPress CTRL+C to quit[0m
+2025-08-02 09:45:41,402 - WARNING - Running in Docker Test Mode: timedatectl and netplan commands will be mocked.
+2025-08-02 09:45:41,420 - INFO - Starting Ubuntu Configuration Service...
+2025-08-02 09:45:41,532 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5002
+ * Running on http://172.18.0.2:5002
+2025-08-02 09:45:41,535 - INFO - [33mPress CTRL+C to quit[0m
+2025-08-02 10:29:24,531 - WARNING - Running in Docker Test Mode: timedatectl and netplan commands will be mocked.
+2025-08-02 10:29:24,596 - INFO - Starting Ubuntu Configuration Service...
+2025-08-02 10:29:24,708 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5002
+ * Running on http://172.18.0.2:5002
+2025-08-02 10:29:24,711 - INFO - [33mPress CTRL+C to quit[0m
+2025-08-02 19:43:50,849 - INFO - Starting Ubuntu Configuration Service...
+2025-08-02 19:43:52,065 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5002
+ * Running on http://192.168.65.3:5002
+2025-08-02 19:43:52,066 - INFO - [33mPress CTRL+C to quit[0m

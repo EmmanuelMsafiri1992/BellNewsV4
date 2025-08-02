@@ -1,0 +1,9 @@
+
+Bell Application Login Details:password for superadmin is: superpasswordpassword for admin is: adminpassword
+
+NewsApp login Details:Superadmin email: admin@vcns.co.ilPassword: password
+
+Normal User login Details
+Email: user@vcns.co.il
+Password: password
+

@@ -1,0 +1,63 @@
+# docker-compose.yml
+# This file defines the multi-service Docker application for your Ubuntu Mini PC.
+# It includes the main Python web app, the Laravel news app,
+# and the Ubuntu configuration service (with host network control).
+
+# Docker Compose file format version.
+version: '3.8'
+
+services:
+  # Main Python Flask web application (bellapp)
+  pythonapp:
+    build: ./bellapp # Specifies the build context for the Python app
+    # When running on the Ubuntu host, this maps to the host's port 5000
+    ports:
+      - "5000:5000"
+    restart: always
+    container_name: bellapp
+    volumes:
+      # Mount the logs directory from the host to the container for persistence and access
+      - ./bellapp/logs:/bellapp/logs
+    depends_on:
+      - config_service # Ensures config_service starts before pythonapp
+    environment:
+      # When running on the same Ubuntu host, config_service is accessible via localhost
+      UBUNTU_CONFIG_SERVICE_URL: http://localhost:5002
+
+  # Laravel news application
+  laravelapp:
+    build: ./newsapp
+    environment:
+      # VITE_API_BASE_URL points to the pythonapp service within the Docker network
+      - VITE_API_BASE_URL=http://pythonapp:5000
+    ports:
+      - "8000:8000"
+      - "5173:5173"
+    restart: always
+    container_name: newsapp
+    depends_on:
+      - pythonapp
+
+  # Ubuntu Configuration Service (runs with host network access on Ubuntu Mini PC)
+  config_service:
+    build:
+      context: .
+      dockerfile: Dockerfile_config
+    # IMPORTANT: network_mode: host allows the container to directly access the host's network stack.
+    # This is required for 'netplan apply' to work on the host.
+    # When using network_mode: host, the 'ports' mapping is not needed as the container
+    # directly uses the host's network interfaces and ports.
+    network_mode: "host"
+    restart: always
+    container_name: config_service
+    volumes:
+      # Mount the host's /etc/netplan directory into the container.
+      # This allows the service to read and write Netplan configuration files on the host.
+      - /etc/netplan:/etc/netplan
+      # Mount the log directory for the config service
+      - ./config_service_logs:/var/log
+    # IMPORTANT: privileged mode gives the container extensive capabilities, including
+    # modifying network interfaces. This is required for 'netplan apply' to function.
+    # USE WITH EXTREME CAUTION IN PRODUCTION.
+    privileged: true
+    # Removed the empty 'environment:' block that was causing the schema error.

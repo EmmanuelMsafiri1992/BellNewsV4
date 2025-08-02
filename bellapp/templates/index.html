@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VCNS Timer Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        /* Basic styling for flash messages to ensure visibility */
+        .flash-message-container {
+            position: fixed;
+            top: 1rem;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000; /* Ensure it's on top of other content */
+            width: 90%;
+            max-width: 500px;
+            box-sizing: border-box;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+            pointer-events: none; /* Allow clicks to pass through when hidden */
+        }
+        .flash-message-container.active {
+            opacity: 1;
+            pointer-events: auto; /* Enable clicks when active */
+        }
+        /* Specific styling for the message box itself */
+        .flash-message {
+            padding: 1.5rem; /* More padding */
+            border-radius: 0.75rem; /* Consistent rounded corners */
+            display: flex;
+            align-items: center;
+            gap: 1rem; /* Space between icon and text */
+            font-weight: 600; /* Bolder text */
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3); /* Stronger shadow */
+            backdrop-filter: none; /* Ensure no glassmorphism effect interferes */
+            -webkit-backdrop-filter: none; /* For Safari */
+            background-color: var(--flash-bg-color, #3B82F6); /* Fallback, will be set by JS */
+            color: var(--flash-text-color, #FFFFFF); /* Fallback, will be set by JS */
+            border: 2px solid var(--flash-border-color, #2563EB); /* Fallback, will be set by JS */
+        }
+
+        /* Close button styling */
+        .flash-message .close-button {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.25rem;
+            color: inherit; /* Inherit color from parent for consistency */
+            opacity: 0.8;
+            transition: opacity 0.2s ease-in-out;
+        }
+        .flash-message .close-button:hover {
+            opacity: 1;
+        }
+
+        /* Specific type styles (overridden by JS, but good as fallback/reference) */
+        .flash-message.error {
+            background-color: #DC2626; /* bg-red-600 */
+            color: #FFFFFF;
+            border-color: #991B1B; /* border-red-800 */
+        }
+        .flash-message.success {
+            background-color: #16A34A; /* bg-green-600 */
+            color: #FFFFFF;
+            border-color: #15803D; /* border-green-800 */
+        }
+        .flash-message.warning {
+            background-color: #D97706; /* bg-yellow-600 */
+            color: #FFFFFF;
+            border-color: #B45309; /* border-yellow-800 */
+        }
+        .flash-message.info {
+            background-color: #2563EB; /* bg-blue-600 */
+            color: #FFFFFF;
+            border-color: #1E40AF; /* border-blue-800 */
+        }
+    </style>
+</head>
+<body>
+    <!-- Login Page Container -->
+    <div id="loginPage" class="login-container">
+        <!-- Decorative floating shapes for visual appeal -->
+        <div class="floating-shapes">
+            <div class="shape shape1"></div>
+            <div class="shape shape2"></div>
+            <div class="shape shape3"></div>
+        </div>
+        <div class="login-card">
+            <!-- Header section for login card -->
+            <div class="text-center mb-8">
+                <div class="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-shield-alt text-white text-2xl"></i>
+                </div>
+                <h1 class="text-3xl font-bold text-gray-800 mb-2">VCNS Timer Pro</h1>
+                <p class="text-gray-600">Sign in to access your timer dashboard</p>
+            </div>
+
+            <!-- Flash Messages - Integrated from Flask for server-side messages -->
+            <!-- This div will be populated by Flask when rendering or by JS for dynamic updates -->
+            <div id="flashMessages" class="flash-message-container hidden">
+                <div class="flash-message" id="loginFlashContainer">
+                    <div class="flex items-center flex-grow">
+                        <i id="loginFlashIcon" class="fas fa-info-circle mr-2"></i>
+                        <span id="loginFlashMessage" class="font-medium text-lg"></span>
+                    </div>
+                    <button type="button" id="closeLoginFlashBtn" class="close-button">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                {# NEW: Add Flask's flashed messages here for JS to pick up #}
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                <ul class="flashes hidden"> {# Keep this hidden, JS will manage visibility #}
+                    {% for category, message in messages %}
+                    <li class="{{ category }}">{{ message }}</li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
+                {% endwith %}
+            </div>
+
+            <!-- Login Form -->
+            <form id="loginForm" class="space-y-6" action="/login" method="POST">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2" for="password_login">Password</label>
+                    <input type="password" name="password" id="password_login" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Enter your password" required>
+                </div>
+                <button type="submit" class="w-full btn btn-primary py-3 text-base" id="loginBtn">
+                    <i class="fas fa-sign-in-alt mr-2"></i>
+                    Sign In
+                </button>
+            </form>
+        </div>
+        
+    </div>
+    <!-- Dashboard Page Container -->
+    <div id="dashboardPage" class="dashboard-container hidden"> {# Initially hidden, shown after login #}
+        <div class="min-h-screen py-8">
+            <div class="container mx-auto px-4 max-w-7xl">
+                <!-- Header Section -->
+                <header class="glass rounded-2xl p-6 mb-8 fade-in">
+                    <div class="flex justify-between items-center">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
+                                <i class="fas fa-clock text-white text-xl"></i>
+                            </div>
+                            <div>
+                                <h1 class="text-3xl font-bold text-gray-800">VCNS Timer Pro</h1>
+                                <p class="text-gray-600 text-sm">Professional Timer Management System</p>
+                            </div>
+                        </div>
+                        <!-- Navigation Links -->
+                        <div class="flex items-center gap-3">
+                            <a href="#" onclick="showSettings()" class="nav-link text-gray-700 hover:text-blue-600">
+                                <i class="fas fa-cog mr-2"></i>Settings
+                            </a>
+                            <!-- NEW: Password Reset Button for Superusers -->
+                           <a href="#" id="resetPasswordBtn" onclick="showResetPasswordModal()" class="nav-link text-gray-700 hover:text-red-600">
+                             <i class="fas fa-user-lock mr-2"></i>Reset Password
+                            </a>
+                            <a href="#" id="showChangePasswordBtn" onclick="showChangePassword()" class="nav-link text-gray-700 hover:text-blue-600">
+                                <i class="fas fa-key mr-2"></i>Change Password
+                            </a>
+                            <!-- License Management Button: Hidden by default, visible for superusers -->
+                            <a href="#" id="licenseManagementBtn" onclick="showLicenseManagement()" class="nav-link text-gray-700 hover:text-purple-600 hidden">
+                                <i class="fas fa-award mr-2"></i>License
+                            </a>
+                            <button type="button" onclick="logout()" class="nav-link text-gray-700 hover:text-red-600">
+                                <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                            </button>
+                        </div>
+                    </div>
+                </header>
+
+                <!-- Dynamic Flash Messages Container (for Dashboard) -->
+                <div id="dashboardFlashMessages" class="flash-message-container hidden">
+                    <div class="flash-message" id="dashboardFlashContainer">
+                        <div class="flex items-center flex-grow">
+                            <i id="dashboardFlashIcon" class="fas fa-info-circle mr-2"></i>
+                            <span id="dashboardFlashMessage" class="font-medium text-lg"></span>
+                        </div>
+                        <button type="button" id="closeDashboardFlashBtn" class="close-button">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+
+                {# NEW: Feature Activation Card for Admin Users #}
+                <!-- This card prompts admin users to activate their features if system license is active but their individual features are not. -->
+                <div id="featureActivationCard" class="card p-8 mb-8 fade-in hidden">
+                    <div class="flex items-center gap-4 mb-6">
+                        <div class="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-star text-yellow-600"></i>
+                        </div>
+                        <h2 class="text-2xl font-semibold text-gray-800">Premium Features Activation</h2>
+                    </div>
+                    <p class="text-gray-600 mb-4">
+                        Your system license is active! To unlock full alarm management and sound upload capabilities for your account,
+                        please activate premium features below. This is a one-time activation per admin user.
+                    </p>
+                    <button onclick="activateFeatures()" class="btn btn-primary" id="activateFeaturesBtn">
+                        <i class="fas fa-bolt mr-2"></i>Activate Premium Features
+                    </button>
+                </div>
+
+
+                <!-- Dashboard Metrics Grid -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+                    <!-- Current Time Card -->
+                    <div class="card p-8 fade-in">
+                        <div class="flex items-center gap-4 mb-4">
+                            <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-clock text-blue-600"></i>
+                            </div>
+                            <h2 class="text-xl font-semibold text-gray-800">Current Time</h2>
+                        </div>
+                        <p class="text-4xl font-light time-display text-gray-900 mb-2" id="currentTime">--:--:--</p>
+                        <div class="flex items-center gap-2 text-gray-600">
+                            <i class="fas fa-globe text-sm"></i>
+                            <span class="text-sm" id="timezone">UTC</span>
+                        </div>
+                    </div>
+
+                    <!-- System Metrics Card (CPU, Memory, Uptime) -->
+                    <div class="card metric-card p-8 fade-in">
+                        <div class="flex items-center gap-4 mb-6">
+                            <div class="w-10 h-10 bg-white bg-opacity-20 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-chart-line text-white"></i>
+                            </div>
+                            <h2 class="text-xl font-semibold text-white">System Metrics</h2>
+                        </div>
+                        <div class="space-y-6">
+                            <div>
+                                <div class="flex justify-between items-center mb-2">
+                                    <span class="text-white text-sm font-medium">CPU Usage</span>
+                                    <span id="cpuText" class="text-white text-sm font-mono">0%</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div id="cpuBar" class="progress-fill" style="width: 0%"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between items-center mb-2">
+                                    <span class="text-white text-sm font-medium">Process Memory</span>
+                                    <span id="memoryText" class="text-white text-sm font-mono">0 MB</span>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between items-center mb-2">
+                                    <span class="text-white text-sm font-medium">System Memory</span>
+                                    <span id="systemMemoryText" class="text-white text-sm font-mono">0%</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div id="systemMemoryBar" class="progress-fill" style="width: 0%"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-white text-sm font-medium">Uptime</span>
+                                    <span id="uptimeText" class="text-white text-sm font-mono">N/A</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sound Library Management Card -->
+                    <div class="card p-8 fade-in">
+                        <div class="flex items-center gap-4 mb-6">
+                            <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-volume-up text-green-600"></i>
+                            </div>
+                            <h2 class="text-xl font-semibold text-gray-800">Sound Library</h2>
+                        </div>
+                        <form id="uploadForm" class="mb-6">
+                            <label class="block text-sm font-medium text-gray-700 mb-3" for="fileInput">Upload Sound File</label>
+                            <div class="space-y-3">
+                                <input type="file" id="fileInput" accept=".mp3,.wav,.ogg"
+                                       class="block w-full px-3 py-2 text-sm text-gray-700 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none" required>
+                                <button type="submit" class="btn btn-primary w-full" id="uploadSoundBtn">
+                                    <i class="fas fa-upload mr-2"></i>
+                                    Upload Sound
+                                </button>
+                            </div>
+                            <p class="text-xs text-gray-500 mt-2">Accepted formats: MP3, WAV, OGG. Maximum file size: 2MB.</p>
+                        </form>
+                        <div>
+                            <h3 class="text-sm font-semibold text-gray-700 mb-3">Available Sounds</h3>
+                            <div id="soundsList" class="space-y-2 max-h-48 overflow-y-auto border border-gray-200 rounded-lg p-2"></div>
+                        </div>
+                    </div>
+                </div>
+
+                {# License Status Card #}
+                <!-- Displays the current system-wide license status and expiry date. -->
+                <div class="card p-8 mb-8 fade-in">
+                    <div class="flex justify-between items-center mb-6">
+                        <div class="flex items-center gap-4">
+                            <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-award text-purple-600"></i>
+                            </div>
+                            <h2 class="text-2xl font-semibold text-gray-800">System License Status</h2>
+                        </div>
+                    </div>
+                    <div class="flex flex-col sm:flex-row items-center justify-between">
+                        <div class="mb-4 sm:mb-0">
+                            <p class="text-gray-600 text-sm mb-2">Current System-Wide License Status:</p>
+                            <span id="licenseStatusBadge" class="license-status-badge"></span>
+                        </div>
+                        <div>
+                            <p class="text-gray-600 text-sm mb-2">System License Expiry Date:</p>
+                            <p id="licenseExpiryDate" class="text-gray-800 font-medium">N/A</p>
+                        </div>
+                    </div>
+                    <div class="mt-6 border-t border-gray-100 pt-6">
+                        <p class="text-sm text-gray-500 mb-4">
+                            Your system's full functionality depends on a valid and active system-wide license.
+                            Please ensure your license is up-to-date to continue using all features.
+                        </p>
+                    </div>
+                </div>
+
+
+                <!-- Alarm Management Section -->
+                <div class="card p-8 mb-8 fade-in">
+                    <div class="flex justify-between items-center mb-6">
+                        <div class="flex items-center gap-4">
+                            <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-bell text-purple-600"></i>
+                            </div>
+                            <h2 class="text-2xl font-semibold text-gray-800">Alarm Management</h2>
+                        </div>
+                        <button type="button" onclick="openModal('addModal')" class="btn btn-primary" id="addAlarmBtn">
+                            <i class="fas fa-plus mr-2"></i>
+                            Add New Alarm
+                        </button>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead>
+                                <tr class="border-b border-gray-200">
+                                    <th class="text-left py-4 px-4 font-semibold text-gray-700">
+                                        <i class="fas fa-calendar-day mr-2"></i>Day
+                                    </th>
+                                    <th class="text-left py-4 px-4 font-semibold text-gray-700">
+                                        <i class="fas fa-clock mr-2"></i>Time
+                                    </th>
+                                    <th class="text-left py-4 px-4 font-semibold text-gray-700">
+                                        <i class="fas fa-tag mr-2"></i>Label
+                                    </th>
+                                    <th class="text-left py-4 px-4 font-semibold text-gray-700">
+                                        <i class="fas fa-music mr-2"></i>Sound
+                                    </th>
+                                    <th class="text-center py-4 px-4 font-semibold text-gray-700">
+                                        <i class="fas fa-cog mr-2"></i>Actions
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody id="alarmsTableBody" class="divide-y divide-gray-100"></tbody>
+                        </table>
+                        <div id="noAlarms" class="text-center py-12 hidden">
+                            <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <i class="fas fa-bell-slash text-gray-400 text-xl"></i>
+                            </div>
+                            <p class="text-gray-500 font-medium">No alarms configured yet.</p>
+                            <p class="text-gray-400 text-sm">Click "Add New Alarm" to get started with your first alarm.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Weekly Alarm Overview Section -->
+                <div class="card p-8 mb-8 fade-in">
+                    <div class="flex justify-between items-center mb-6">
+                        <div class="flex items-center gap-4">
+                            <div class="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-calendar-week text-orange-600"></i>
+                            </div>
+                            <h2 class="text-2xl font-semibold text-gray-800">Weekly Alarm Overview</h2>
+                        </div>
+                    </div>
+                    <div id="weeklyAlarmsGrid" class="weekly-alarms-grid">
+                        <!-- Weekly alarms will be dynamically rendered here by JavaScript -->
+                    </div>
+                    <div id="noWeeklyAlarms" class="text-center py-12 hidden">
+                        <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-calendar-times text-gray-400 text-xl"></i>
+                        </div>
+                        <p class="text-gray-500 font-medium">No alarms scheduled for this week.</p>
+                        <p class="text-gray-400 text-sm">Add alarms to your schedule to see them organized here by day.</p>
+                    </div>
+                </div>
+
+                <!-- Add New Alarm Modal -->
+                <div id="addModal" class="modal fixed inset-0 bg-black bg-opacity-50 items-center justify-center z-50 p-4">
+                    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-auto">
+                        <div class="p-6 border-b border-gray-100">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-plus text-blue-600"></i>
+                                </div>
+                                <h3 class="text-xl font-semibold text-gray-800">Add New Alarm</h3>
+                            </div>
+                        </div>
+                        <form id="addAlarmForm" class="p-6">
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2" for="addDay">Day of Week</label>
+                                    <select name="day" id="addDay" class="w-full p-3" required>
+                                        <option value="">Select day</option>
+                                        <option>Monday</option>
+                                        <option>Tuesday</option>
+                                        <option>Wednesday</option>
+                                        <option>Thursday</option>
+                                        <option>Friday</option>
+                                        <option>Saturday</option>
+                                        <option>Sunday</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2" for="addTime">Time</label>
+                                    <input type="time" name="time" id="addTime" class="w-full p-3" required>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2" for="addLabel">Label (Optional)</label>
+                                    <input type="text" name="label" id="addLabel" placeholder="e.g., Morning Meeting" class="w-full p-3">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2" for="addSound">Sound</label>
+                                    <select name="sound" id="addSound" class="w-full p-3" required></select>
+                                </div>
+                            </div>
+                            <div class="flex gap-3 mt-8">
+                                <button type="button" id="closeAddModalBtn" class="btn btn-secondary flex-1">
+                                    <i class="fas fa-times mr-2"></i>
+                                    Cancel
+                                </button>
+                                <button type="submit" class="btn btn-primary flex-1">
+                                    <i class="fas fa-check mr-2"></i>
+                                    Add Alarm
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Edit Alarm Modal -->
+                <div id="editModal" class="modal fixed inset-0 bg-black bg-opacity-50 items-center justify-center z-50 p-4">
+                    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-auto">
+                        <div class="p-6 border-b border-gray-100">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-edit text-green-600"></i>
+                                </div>
+                                <h3 class="text-xl font-semibold text-gray-800">Edit Alarm</h3>
+                            </div>
+                        </div>
+                        <form id="editAlarmForm" class="p-6">
+                            <input type="hidden" id="editAlarmIndex">
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2" for="editDay">Day of Week</label>
+                                    <select name="day" id="editDay" class="w-full p-3" required>
+                                        <option value="Monday">Monday</option>
+                                        <option value="Tuesday">Tuesday</option>
+                                        <option value="Wednesday">Wednesday</option>
+                                        <option value="Thursday">Thursday</option>
+                                        <option value="Friday">Friday</option>
+                                        <option value="Saturday">Saturday</option>
+                                        <option value="Sunday">Sunday</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2" for="editTime">Time</label>
+                                    <input type="time" id="editTime" class="w-full p-3" required>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2" for="editLabel">Label (Optional)</label>
+                                    <input type="text" id="editLabel" placeholder="e.g., Morning Meeting" class="w-full p-3">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2" for="editSound">Sound</label>
+                                    <select id="editSound" class="w-full p-3" required></select>
+                                </div>
+                            </div>
+                            <div class="flex gap-3 mt-8">
+                                <button type="button" id="closeEditModalBtn" class="btn btn-secondary flex-1">
+                                    <i class="fas fa-times mr-2"></i>
+                                    Cancel
+                                </button>
+                                <button type="submit" class="btn btn-primary flex-1">
+                                    <i class="fas fa-check mr-2"></i>
+                                    Save Changes
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <!-- NEW: Reset Password Modal for Superadmin -->
+<div id="resetPasswordModal" class="modal fixed inset-0 bg-black bg-opacity-50 items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-auto">
+        <div class="p-6 border-b border-gray-100">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-users-cog text-blue-600"></i>
+                </div>
+                <h3 class="text-xl font-semibold text-gray-800">Reset Password for Adminuser</h3>
+            </div>
+        </div>
+        <div class="p-6">
+            <!-- Removed Tab navigation -->
+            <!-- Reset Password View -->
+            <div id="resetPasswordView" class="tab-content active">
+                <form id="resetPasswordForm" class="space-y-4">
+                    <div>
+                        <label for="resetUsername" class="block text-sm font-medium text-gray-700 mb-2">Select User to Reset</label>
+                        <select id="resetUsername" name="username"
+                                class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
+                            <option value="">Loading users...</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="resetNewPassword" class="block text-sm font-medium text-gray-700 mb-2">New Password</label>
+                        <input type="password" id="resetNewPassword" name="new_password"
+                               class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required minlength="8">
+                        <p class="text-xs text-gray-500 mt-1">Password must be at least 8 characters long</p>
+                    </div>
+                    <div>
+                        <label for="resetConfirmPassword" class="block text-sm font-medium text-gray-700 mb-2">Confirm New Password</label>
+                        <input type="password" id="resetConfirmPassword" name="confirm_password"
+                               class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required minlength="8">
+                    </div>
+                    <div class="flex gap-3 mt-8">
+                        <button type="button" id="closeResetPasswordModalBtn" class="btn btn-secondary flex-1">
+                            <i class="fas fa-times mr-2"></i>
+                            Cancel
+                        </button>
+                        <button type="submit" class="btn btn-primary flex-1">
+                            <i class="fas fa-check mr-2"></i>
+                            Reset Password
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+                <!-- Change Password Modal -->
+                <div id="changePasswordModal" class="modal fixed inset-0 bg-black bg-opacity-50 items-center justify-center z-50 p-4">
+                    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-auto">
+                        <div class="p-6 border-b border-gray-100">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-key text-blue-600"></i>
+                                </div>
+                                <h3 class="text-xl font-semibold text-gray-800">Change Password</h3>
+                            </div>
+                        </div>
+                        <form id="changePasswordForm" class="p-6" action="/change_password" method="POST">
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2" for="currentPassword">Current Password</label>
+                                    <input type="password" name="current_password" id="currentPassword" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Enter current password" required>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2" for="newPassword">New Password</label>
+                                    <input type="password" name="new_password" id="newPassword" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Enter new password" required minlength="8">
+                                    <p class="text-xs text-gray-500 mt-1">Password must be at least 8 characters long</p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2" for="confirmPassword">Confirm New Password</label>
+                                    <input type="password" name="confirm_password" id="confirmPassword" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Confirm new password" required>
+                                </div>
+                            </div>
+                            <div class="flex gap-3 mt-8">
+                                <button type="button" id="closeChangePasswordModalBtn" class="btn btn-secondary flex-1">
+                                    <i class="fas fa-times mr-2"></i>
+                                    Cancel
+                                </button>
+                                <button type="submit" class="btn btn-primary flex-1">
+                                    <i class="fas fa-check mr-2"></i>
+                                    Change Password
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+<!-- System Settings Modal -->
+<div id="settingsModal" class="modal fixed inset-0 bg-black bg-opacity-50 items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-auto">
+        <div class="p-6 border-b border-gray-100">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 bg-yellow-100 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-cogs text-yellow-600"></i>
+                </div>
+                <h3 class="text-xl font-semibold text-gray-800">System Settings</h3>
+            </div>
+        </div>
+        <form id="settingsForm" class="p-6">
+            <h4 class="text-lg font-semibold text-gray-700 mb-4">Network Settings</h4>
+            <div class="space-y-4 mb-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">IP Address Configuration</label>
+                    <div class="mt-2 space-y-2">
+                        <div class="flex items-center">
+                            <input type="radio" id="dynamicIp" name="ipType" value="dynamic" class="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500" checked>
+                            <label for="dynamicIp" class="ml-3 block text-sm font-medium text-gray-700">Dynamic IP (DHCP)</label>
+                        </div>
+                        <div class="flex items-center">
+                            <input type="radio" id="staticIp" name="ipType" value="static" class="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500">
+                            <label for="staticIp" class="ml-3 block text-sm font-medium text-gray-700">Static IP</label>
+                        </div>
+                    </div>
+                </div>
+                <div id="staticIpFields" class="space-y-4 hidden">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2" for="ipAddress">IP Address</label>
+                        <input type="text" id="ipAddress" class="w-full p-3" placeholder="e.g., 192.168.1.100" pattern="^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$" title="Please enter a valid IPv4 address (e.g., 192.168.1.1)" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2" for="subnetMask">Subnet Mask</label>
+                        <input type="text" id="subnetMask" class="w-full p-3" placeholder="e.g., 255.255.255.0" pattern="^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$" title="Please enter a valid IPv4 subnet mask (e.g., 255.255.255.0)" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2" for="gateway">Gateway</label>
+                        <input type="text" id="gateway" class="w-full p-3" placeholder="e.g., 192.168.1.1" pattern="^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$" title="Please enter a valid IPv4 gateway address (e.g., 192.168.1.1)" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2" for="dnsServer">DNS Server (Optional)</label>
+                        <input type="text" id="dnsServer" class="w-full p-3" placeholder="e.g., 8.8.8.8" pattern="^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$" title="Please enter a valid IPv4 DNS server address (e.g., 8.8.8.8)">
+                    </div>
+                </div>
+                <!-- UPDATED: Ubuntu Device IP Address Input -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2" for="ubuntuDeviceIpAddress">Ubuntu Device IP Address</label>
+                    <input type="text" id="ubuntuDeviceIpAddress" class="w-full p-3" placeholder="e.g., 192.168.1.150" pattern="^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$" title="Please enter the IP address of your Ubuntu device.">
+                </div>
+            </div>
+
+            <h4 class="text-lg font-semibold text-gray-700 mb-4 mt-8">Time Settings</h4>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Time Synchronization</label>
+                    <div class="toggle-container mb-3">
+                        <div id="ntpOption" class="toggle-option active" onclick="selectTimeType('ntp')" data-time-type="ntp">NTP Server</div>
+                        <div id="manualOption" class="toggle-option" onclick="selectTimeType('manual')" data-time-type="manual">Set Manually</div>
+                    </div>
+                </div>
+                <div id="ntpSettingsFields" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2" for="ntpServer">NTP Server Address</label>
+                        <input type="text" id="ntpServer" class="w-full p-3" placeholder="e.g., pool.ntp.org">
+                    </div>
+                </div>
+                <div id="manualTimeFields" class="space-y-4 hidden">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2" for="manualDate">Manual Date</label>
+                        <input type="date" id="manualDate" class="w-full p-3">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2" for="manualTime">Manual Time</label>
+                        <input type="time" id="manualTime" class="w-full p-3">
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex gap-3 mt-8">
+                <button type="button" id="closeSettingsModalBtn" class="btn btn-secondary flex-1">
+                    <i class="fas fa-times mr-2"></i>
+                    Cancel
+                </button>
+                <button type="submit" class="btn btn-primary flex-1">
+                    <i class="fas fa-check mr-2"></i>
+                    Save Settings
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+                {# License Management Modal #}
+                <div id="licenseModal" class="modal fixed inset-0 bg-black bg-opacity-50 items-center justify-center z-50 p-4">
+                    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl mx-auto">
+                        <div class="p-6 border-b border-gray-100">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-award text-purple-600"></i>
+                                </div>
+                                <h3 class="text-xl font-semibold text-gray-800">License Management</h3>
+                            </div>
+                        </div>
+                        <div class="p-6">
+                            <!-- Tab navigation for License Management -->
+                            <div class="tab-button-group">
+                                <button type="button" class="tab-button active" onclick="openLicenseTab('manageLicense')">Manage System License</button>
+                                <!-- The 'Licensed Users' tab is only visible to superusers -->
+                                <button type="button" class="tab-button hidden" id="licensedUsersTabBtn" onclick="openLicenseTab('licensedUsers')">Licensed Users</button>
+                            </div>
+
+                            <!-- Manage System License Tab Content -->
+                            <div id="manageLicense" class="tab-content active">
+                                <form id="licenseForm" class="space-y-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2" for="licenseKey">System License Key</label>
+                                        <input type="text" id="licenseKey" class="w-full p-3" placeholder="Enter system license key" required>
+                                        <!-- Generate New Key Button: Only visible for superusers -->
+                                        <button type="button" onclick="generateLicenseKey()" class="mt-2 text-blue-600 hover:underline text-sm" id="generateKeyBtn">
+                                            <i class="fas fa-sync-alt mr-1"></i>Generate New Key
+                                        </button>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2" for="licenseExpiry">System License Expiry Date and Time</label>
+                                        <input type="datetime-local" id="licenseExpiry" class="w-full p-3" required>
+                                        <p class="text-xs text-gray-500 mt-1">Format:YYYY-MM-DDTHH:MM (e.g., 2025-12-31T23:59)</p>
+                                    </div>
+                                    <div class="flex gap-3 pt-4">
+                                        <button type="button" id="closeLicenseModalBtn" class="btn btn-secondary flex-1">
+                                            <i class="fas fa-times mr-2"></i>
+                                            Cancel
+                                        </button>
+                                        <!-- Validate License Button: Only visible for superusers -->
+                                        <button type="submit" class="btn btn-primary flex-1" id="validateLicenseBtn">
+                                            <i class="fas fa-check mr-2"></i>
+                                            Validate System License
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+
+                            <!-- Licensed Users Tab Content: Only visible for superusers -->
+                            <div id="licensedUsers" class="tab-content">
+                                <div class="overflow-x-auto">
+                                    <table class="w-full text-sm text-left text-gray-500">
+                                        <thead class="text-xs text-gray-700 uppercase bg-gray-50">
+                                            <tr>
+                                                <th scope="col" class="px-6 py-3">User ID</th>
+                                                <th scope="col" class="px-6 py-3">Features Activated At</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="licensedUsersTableBody">
+                                            <!-- Licensed users will be rendered here by JS -->
+                                        </tbody>
+                                    </table>
+                                    <div id="noLicensedUsers" class="text-center py-6 hidden">
+                                        <p class="text-gray-500">No users have activated premium features yet.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer Section -->
+                <footer class="glass rounded-2xl p-6 mt-8 text-center fade-in">
+                    <div class="flex items-center justify-center gap-2 text-gray-600">
+                        <i class="fas fa-copyright"></i>
+                        <span>Vcns Software Solutions, Contact Support: vcns@vsns.co.il, Mobile: +972524475438.</span>
+                    </div>
+                </footer>
+            </div>
+        </div>
+    </div>
+    <!-- Import the main.js module, which will then import all other modules -->
+    <script type="module" src="{{ url_for('static', filename='main.js') }}"></script>
+    <!-- Hidden input to get Flask login status, populated by the backend -->
+    <input type="hidden" id="flaskLoginStatus" value="{{ 'true' if is_logged_in else 'false' }}">
+    <!-- Hidden inputs populated by Flask to pass current user role and feature activation status to JavaScript -->
+    <input type="hidden" id="currentUserRoleInput" value="{{ current_user_role }}">
+    <input type="hidden" id="currentUserFeaturesActivatedInput" value="{{ 'true' if current_user_features_activated else 'false' }}">
+
+</body>
+</html>

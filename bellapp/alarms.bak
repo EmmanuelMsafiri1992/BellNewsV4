@@ -1,0 +1,10 @@
+{
+  "alarms": [
+    {
+      "day": "Monday",
+      "time": "16:37",
+      "label": "",
+      "sound": "static/audio/bubble-254777.mp3"
+    }
+  ]
+}

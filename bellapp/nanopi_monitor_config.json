@@ -1,0 +1,16 @@
+{
+  "timezone": "Africa/Johannesburg",
+  "display_brightness": 255,
+  "auto_brightness": true,
+  "ntp_servers": ["pool.ntp.org", "time.google.com"],
+  "display_timeout": 0,
+  "refresh_rate": 1.0,
+  "mock_mode": true,
+  "alarms": {
+    "temperature": 70.0,
+    "cpu": 90.0,
+    "memory": 90.0,
+    "disk": 90.0
+  },
+  "time_alarms": []
+}

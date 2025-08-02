@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - VCNS Timer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --secondary: #64748b;
+            --success: #059669;
+            --danger: #dc2626;
+            --warning: #d97706;
+            --background: #f8fafc;
+            --surface: #ffffff;
+            --border: #e2e8f0;
+        }
+        
+        * {
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            margin: 0;
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 16px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            transition: all 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 25px 35px -5px rgba(0, 0, 0, 0.15), 0 15px 15px -5px rgba(0, 0, 0, 0.06);
+        }
+        
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.875rem 1.5rem;
+            border-radius: 10px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            border: none;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 0.875rem;
+            position: relative;
+            overflow: hidden;
+            width: 100%;
+        }
+        
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+        
+        .btn:hover::before {
+            left: 100%;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), #3b82f6);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px -3px rgba(37, 99, 235, 0.4);
+        }
+        
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+        
+        .form-group {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 0.875rem 0.875rem 0.875rem 3rem;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            font-size: 0.875rem;
+            transition: all 0.3s ease;
+            background: white;
+            font-family: inherit;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+            transform: translateY(-1px);
+        }
+        
+        .form-icon {
+            position: absolute;
+            left: 0.875rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #9ca3af;
+            z-index: 10;
+            transition: color 0.3s ease;
+        }
+        
+        .form-input:focus + .form-icon {
+            color: var(--primary);
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #374151;
+            font-size: 0.875rem;
+        }
+        
+        .alert {
+            /* Positioning for the flash message */
+            position: fixed;
+            top: 20px; /* Adjust as needed */
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000; /* Ensure it's on top of other content */
+
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: 1.5rem; /* This margin will not apply due to fixed position */
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            animation: slideIn 0.3s ease-out;
+            min-width: 250px; /* Ensure it's readable */
+            max-width: 90%; /* Responsive width */
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Add shadow */
+        }
+        
+        .alert-error {
+            background: linear-gradient(135deg, #fef2f2, #fee2e2);
+            border: 1px solid #fecaca;
+            color: #dc2626;
+        }
+        
+        .alert-success {
+            background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+            border: 1px solid #bbf7d0;
+            color: #059669;
+        }
+        
+        .alert-warning {
+            background: linear-gradient(135deg, #fffbeb, #fef3c7);
+            border: 1px solid #fed7aa;
+            color: #d97706;
+        }
+        
+        @keyframes slideIn {
+            from { 
+                opacity: 0; 
+                transform: translateX(-50%) translateY(-20px); 
+            }
+            to { 
+                opacity: 1; 
+                transform: translateX(-50%) translateY(0); 
+            }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.6s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from { 
+                opacity: 0; 
+                transform: translateY(20px) scale(0.95); 
+            }
+            to { 
+                opacity: 1; 
+                transform: translateY(0) scale(1); 
+            }
+        }
+        
+        .header-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, var(--primary), #3b82f6);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            box-shadow: 0 10px 25px -3px rgba(37, 99, 235, 0.3);
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { 
+                transform: scale(1); 
+            }
+            50% { 
+                transform: scale(1.05); 
+            }
+        }
+        
+        .toggle-password {
+            position: absolute;
+            right: 0.875rem;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #9ca3af;
+            cursor: pointer;
+            padding: 0.25rem;
+            transition: color 0.3s ease;
+            border-radius: 4px;
+        }
+        
+        .toggle-password:hover {
+            color: var(--primary);
+            background: rgba(37, 99, 235, 0.1);
+        }
+        
+        .login-footer {
+            background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+            border-radius: 8px;
+            padding: 0.75rem;
+            margin-top: 1.5rem;
+            border: 1px solid var(--border);
+        }
+        
+        .brand-text {
+            background: linear-gradient(135deg, var(--primary), #3b82f6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 600;
+        }
+        
+        .floating-shapes {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            overflow: hidden;
+            pointer-events: none;
+            z-index: -1;
+        }
+        
+        .shape {
+            position: absolute;
+            opacity: 0.1;
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        .shape1 {
+            top: 20%;
+            left: 10%;
+            animation-delay: 0s;
+        }
+        
+        .shape2 {
+            top: 60%;
+            right: 10%;
+            animation-delay: 2s;
+        }
+        
+        .shape3 {
+            bottom: 20%;
+            left: 20%;
+            animation-delay: 4s;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+    </style>
+</head>
+<body>
+    <div class="floating-shapes">
+        <div class="shape shape1 w-20 h-20 bg-white rounded-full"></div>
+        <div class="shape shape2 w-16 h-16 bg-white rounded-full"></div>
+        <div class="shape shape3 w-12 h-12 bg-white rounded-full"></div>
+    </div>
+    
+    <div class="container mx-auto px-4 max-w-md">
+        <div class="card p-8 fade-in">
+            <!-- Header -->
+            <div class="text-center mb-8">
+                <div class="header-icon">
+                    <i class="fas fa-shield-alt text-white text-2xl"></i>
+                </div>
+                <div class="mb-4">
+                    <h1 class="text-2xl font-bold text-gray-800 mb-2">
+                        <span class="brand-text">VCNS Timer</span>
+                    </h1>
+                    <p class="text-gray-600 text-sm">Admin Access Portal</p>
+                </div>
+                <div class="flex items-center justify-center gap-2 text-xs text-gray-500">
+                    <i class="fas fa-lock"></i>
+                    <span>Secure Login</span>
+                </div>
+            </div>
+
+            <!-- Login Form -->
+            <form action="/login" method="POST" id="loginForm">
+                <div class="form-group">
+                    <label for="username" class="form-label">
+                        <i class="fas fa-user mr-2"></i>Username
+                    </label>
+                    <div class="relative">
+                        <input 
+                            type="text" 
+                            name="username" 
+                            id="username" 
+                            class="form-input" 
+                            placeholder="Enter your username"
+                            required
+                            autocomplete="username"
+                        >
+                        <i class="fas fa-user form-icon"></i>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="password" class="form-label">
+                        <i class="fas fa-key mr-2"></i>Password
+                    </label>
+                    <div class="relative">
+                        <input 
+                            type="password" 
+                            name="password" 
+                            id="password" 
+                            class="form-input" 
+                            placeholder="Enter your password"
+                            required
+                            autocomplete="current-password"
+                        >
+                        <i class="fas fa-lock form-icon"></i>
+                        <button type="button" class="toggle-password" onclick="togglePassword()">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary" id="loginBtn">
+                    <i class="fas fa-sign-in-alt"></i>
+                    <span>Access Dashboard</span>
+                </button>
+            </form>
+
+            <!-- Footer -->
+            <div class="login-footer">
+                <div class="text-center">
+                    <p class="text-xs text-gray-600 mb-2">
+                        <i class="fas fa-shield-alt mr-1"></i>
+                        Protected by enterprise-grade security
+                    </p>
+                    <div class="flex items-center justify-center gap-4 text-xs text-gray-500">
+                        <span class="flex items-center gap-1">
+                            <i class="fas fa-clock"></i>
+                            Timer Management
+                        </span>
+                        <span class="flex items-center gap-1">
+                            <i class="fas fa-cog"></i>
+                            System Control
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function togglePassword() {
+            const passwordField = document.getElementById('password');
+            const toggleButton = document.querySelector('.toggle-password');
+            const icon = toggleButton.querySelector('i');
+            
+            if (passwordField.type === 'password') {
+                passwordField.type = 'text';
+                icon.className = 'fas fa-eye-slash';
+            } else {
+                passwordField.type = 'password';
+                icon.className = 'fas fa-eye';
+            }
+        }
+
+        // Form submission with loading state
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const loginBtn = document.getElementById('loginBtn');
+            
+            // Add null checks for robustness against unexpected DOM changes (e.g., by browser extensions)
+            const btnText = loginBtn ? loginBtn.querySelector('span') : null;
+            const btnIcon = loginBtn ? loginBtn.querySelector('i') : null;
+            
+            // Show loading state ONLY if elements are found
+            if (btnIcon) {
+                btnIcon.className = 'fas fa-spinner fa-spin';
+            }
+            if (btnText) {
+                btnText.textContent = 'Authenticating...';
+            }
+            if (loginBtn) { // Ensure loginBtn exists before disabling
+                loginBtn.disabled = true;
+            }
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            try {
+                const response = await fetch('/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: new URLSearchParams({
+                        username: username,
+                        password: password
+                    })
+                });
+
+                // Check if response is JSON or HTML (Flask might return HTML on redirect for errors)
+                const contentType = response.headers.get('content-type');
+                if (response.ok && contentType && contentType.includes('application/json')) {
+                    const result = await response.json();
+                    // Successful login, redirect
+                    window.location.href = result.redirect_url;
+                } else if (response.ok) {
+                    // If it's HTML on success (e.g., direct redirect by Flask without JSON response)
+                    // This case is less likely with the current Flask backend, but good for robustness
+                    window.location.href = response.url; // Redirect to the URL received
+                }
+                 else {
+                    let errorMessage = "Login failed. Please try again.";
+                    if (contentType && contentType.includes('application/json')) {
+                         const result = await response.json();
+                         errorMessage = result.message || errorMessage;
+                    } else {
+                        // Attempt to read as text if not JSON. Flask might send full HTML for errors.
+                        // We can't parse HTML in JS easily to get the flash message, so a generic error is better.
+                        errorMessage = await response.text(); // For debugging, you might log this.
+                        errorMessage = "Login failed. Please check your credentials and try again."; // User-friendly generic message
+                    }
+                    showFlashMessage(errorMessage, "error");
+                }
+            } catch (error) {
+                console.error("Login fetch error:", error);
+                showFlashMessage("An unexpected error occurred during login. Please try again.", "error");
+            } finally {
+                // Re-enable button ONLY if elements are found
+                if (btnIcon) {
+                    btnIcon.className = 'fas fa-sign-in-alt';
+                }
+                if (btnText) {
+                    btnText.textContent = 'Access Dashboard';
+                }
+                if (loginBtn) {
+                    loginBtn.disabled = false;
+                }
+            }
+        });
+
+        // This function provides immediate feedback on the login page itself.
+        // It now appends directly to the body, making it more robust.
+        function showFlashMessage(message, type = "info") {
+            const flashContainer = document.createElement('div');
+            flashContainer.className = `alert alert-${type}`; // Apply initial styling
+            flashContainer.innerHTML = `
+                <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-triangle' : 'fa-info-circle'}"></i>
+                <span>${message}</span>
+            `;
+            
+            document.body.appendChild(flashContainer); // Append to the body
+            
+            // Automatically remove the message after 4 seconds
+            setTimeout(() => {
+                if (flashContainer && flashContainer.parentNode) { // Check if it still exists before trying to remove
+                    flashContainer.remove();
+                }
+            }, 4000);
+        }
+
+        // Add focus animation to form
+        document.getElementById('password').addEventListener('focus', function() {
+            this.parentElement.style.transform = 'scale(1.02)';
+        });
+
+        document.getElementById('password').addEventListener('blur', function() {
+            this.parentElement.style.transform = 'scale(1)';
+        });
+
+        document.getElementById('username').addEventListener('focus', function() {
+            this.parentElement.style.transform = 'scale(1.02)';
+        });
+
+        document.getElementById('username').addEventListener('blur', function() {
+            this.parentElement.style.transform = 'scale(1)';
+        });
+
+        // Add keyboard shortcut (Enter)
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && (document.activeElement.id === 'password' || document.activeElement.id === 'username')) {
+                document.getElementById('loginForm').submit();
+            }
+        });  
+    </script>
+</body>
+</html>

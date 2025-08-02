@@ -1,0 +1,5 @@
+{
+  "devDependencies": {
+    "@vitejs/plugin-legacy": "^6.1.1"
+  }
+}

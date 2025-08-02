@@ -1,0 +1,8 @@
+flask
+simpleaudio
+psutil
+Flask-Login
+pytz
+requests
+bcrypt
+gunicorn

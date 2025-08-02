@@ -1,0 +1,18 @@
+2025-06-15 15:01:16,441 - VCNS-Timer-Service - WARNING - Pygame mixer initialization failed: dsp: No such audio device. Sound playback disabled.
+2025-06-15 15:01:16,443 - VCNS-Timer-Service - INFO - Using UTC in WSL
+2025-06-15 15:01:16,457 - VCNS-Timer-Service - CRITICAL - Service crashed: unsupported operand type(s) for /: 'str' and 'str'
+2025-06-15 15:07:32,669 - VCNS-Timer-Service - WARNING - Pygame mixer initialization failed: dsp: No such audio device. Sound playback disabled.
+2025-06-15 15:07:32,670 - VCNS-Timer-Service - INFO - Using UTC in WSL
+2025-06-15 15:07:32,682 - VCNS-Timer-Service - CRITICAL - Service crashed: unsupported operand type(s) for /: 'str' and 'str'
+2025-06-15 16:04:08,712 - VCNS-Timer-Service - WARNING - Pygame mixer initialization failed: dsp: No such audio device. Sound playback disabled.
+2025-06-15 16:04:08,714 - VCNS-Timer-Service - INFO - Using UTC in WSL
+2025-06-15 16:04:08,730 - VCNS-Timer-Service - CRITICAL - Service crashed: unsupported operand type(s) for /: 'str' and 'str'
+2025-06-15 16:06:29,505 - VCNS-Timer-Service - WARNING - Pygame mixer initialization failed: dsp: No such audio device. Sound playback disabled.
+2025-06-15 16:06:29,507 - VCNS-Timer-Service - INFO - Using UTC in WSL
+2025-06-15 16:06:29,529 - VCNS-Timer-Service - CRITICAL - Service crashed: unsupported operand type(s) for /: 'str' and 'str'
+2025-06-15 16:07:37,544 - VCNS-Timer-Service - WARNING - Pygame mixer initialization failed: dsp: No such audio device. Sound playback disabled.
+2025-06-15 16:07:37,545 - VCNS-Timer-Service - INFO - Using UTC in WSL
+2025-06-15 16:07:37,554 - VCNS-Timer-Service - CRITICAL - Service crashed: unsupported operand type(s) for /: 'str' and 'str'
+2025-06-15 16:09:55,490 - VCNS-Timer-Service - WARNING - Pygame mixer initialization failed: dsp: No such audio device. Sound playback disabled.
+2025-06-15 16:09:55,579 - VCNS-Timer-Service - INFO - Using UTC in WSL
+2025-06-15 16:09:55,691 - VCNS-Timer-Service - CRITICAL - Service crashed: unsupported operand type(s) for /: 'str' and 'str'

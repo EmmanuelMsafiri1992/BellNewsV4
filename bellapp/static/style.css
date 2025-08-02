@@ -1,0 +1,375 @@
+        /* Define CSS variables for consistent theming */
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --secondary: #64748b;
+            --success: #059669;
+            --danger: #dc2626;
+            --warning: #d97706;
+            --background: #f8fafc;
+            --surface: #ffffff;
+            --border: #e2e8f0;
+        }
+
+        /* Universal box-sizing for consistent layout calculations */
+        * {
+            box-sizing: border-box;
+        }
+
+        /* Body styling for overall page appearance */
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh; /* Full viewport height */
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Glassmorphism effect for background elements */
+        .glass {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        /* Card styling for content blocks */
+        .card {
+            background: var(--surface);
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            border: 1px solid var(--border);
+            transition: all 0.3s ease; /* Smooth transitions for hover effects */
+        }
+
+        /* Hover effect for cards */
+        .card:hover {
+            transform: translateY(-2px); /* Slight lift effect */
+            box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Modal specific styling (hidden by default) */
+        .modal {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* Smooth transition for modal display */
+            opacity: 0;
+            visibility: hidden;
+            transform: scale(0.95); /* Slightly scaled down when hidden */
+        }
+
+        /* Active state for modals (visible and full size) */
+        .modal.active {
+            opacity: 1;
+            visibility: visible;
+            transform: scale(1);
+            display: flex !important; /* Force flex display when active */
+        }
+
+        /* Button base styles */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            border: none;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 0.875rem;
+        }
+
+        /* Disabled state for buttons */
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Primary button styling */
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* Primary button hover effect */
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+        }
+
+        /* Danger button styling */
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+        
+        /* Secondary button styling */
+        .btn-secondary {
+            background: var(--secondary);
+            color: white;
+        }
+
+        /* Progress bar container styling */
+        .progress-bar {
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Progress bar fill styling with gradient and animation */
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), #3b82f6);
+            border-radius: 4px; /* Changed from 44px for consistency */
+            transition: width 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Shimmer effect for progress bar fill */
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        /* Keyframe animation for shimmer effect */
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        /* Special metric card styling */
+        .metric-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+        }
+
+        /* Time display specific font styling */
+        .time-display {
+            font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Consolas', monospace;
+            font-weight: 300;
+            letter-spacing: -0.02em;
+        }
+
+        /* Fade-in animation for elements */
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        /* Keyframe animation for fade-in effect */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Table row hover effect */
+        .table-row:hover {
+            background: #f8fafc;
+        }
+
+        /* Flash message styling */
+        .flash-message {
+            border-radius: 12px;
+            backdrop-filter: blur(10px); /* Glassmorphism effect for flash messages */
+        }
+
+        /* Input, select, textarea base styles */
+        input, select, textarea {
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            transition: all 0.2s ease;
+            padding: 0.75rem; /* Added padding for better appearance */
+        }
+
+        /* Focus state for form elements */
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        /* Navigation link styling */
+        .nav-link {
+            transition: all 0.2s ease;
+            border-radius: 6px;
+            padding: 0.5rem 1rem;
+        }
+
+        /* Navigation link hover effect */
+        .nav-link:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Login Page Styles */
+        .login-container {
+            display: none; /* Hidden by default, shown by JS */
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+
+        .login-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 3rem;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+        
+        .dashboard-container {
+            display: block; /* Shown by default for logged-in users via Flask, then hidden/shown by JS */
+        }
+
+        /* Weekly Alarms Specific Styles */
+        .weekly-alarms-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* Responsive grid columns */
+            gap: 1.5rem;
+        }
+
+        .day-card {
+            background: var(--surface);
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            border: 1px solid var(--border);
+            transition: all 0.3s ease;
+        }
+
+        .alarm-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 0;
+            border-bottom: 1px dashed var(--border); /* Dashed border for visual separation */
+        }
+        .alarm-item:last-child {
+            border-bottom: none; /* Remove border from the last item in the list */
+        }
+
+        /* Time setting toggle styles for settings modal */
+        .toggle-container {
+            display: flex;
+            background-color: #e2e8f0;
+            border-radius: 8px;
+            padding: 4px;
+            width: 100%;
+        }
+
+        .toggle-option {
+            flex: 1; /* Distribute space equally */
+            text-align: center;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-weight: 500;
+            color: #4b5563;
+        }
+
+        .toggle-option.active {
+            background-color: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            color: var(--primary);
+        }
+
+        /* License status badge styling */
+        .license-status-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.3rem 0.8rem;
+            border-radius: 9999px; /* Pill shape */
+            font-size: 0.8em;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .license-status-badge.active {
+            background-color: #d1fae5; /* green-100 */
+            color: #065f46; /* green-800 */
+        }
+        .license-status-badge.expired {
+            background-color: #fee2e2; /* red-100 */
+            color: #991b1b; /* red-800 */
+        }
+        .license-status-badge.unlicensed,
+        .license-status-badge.invalid_format {
+            background-color: #e0e7ff; /* blue-100 */
+            color: #1e40af; /* blue-800 */
+        }
+
+        /* Tabs for License Management Modal */
+        .tab-button-group {
+            display: flex;
+            border-bottom: 1px solid #e2e8f0;
+            margin-bottom: 1.5rem;
+        }
+        .tab-button {
+            padding: 0.75rem 1.25rem;
+            font-weight: 500;
+            color: #64748b;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s ease;
+        }
+        .tab-button.active {
+            color: var(--primary);
+            border-color: var(--primary);
+        }
+        .tab-content {
+            display: none; /* Hidden by default, shown when active */
+        }
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Simple animation for floating shapes on login page */
+        @keyframes float {
+            0% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-10px) rotate(5deg); }
+            100% { transform: translateY(0px) rotate(0deg); }
+        }
+
+        .floating-shapes .shape {
+            position: absolute;
+            background-color: rgba(255, 255, 255, 0.1);
+            animation: float 6s ease-in-out infinite;
+            pointer-events: none; /* Ensure shapes don't interfere with interaction */
+        }
+
+        .floating-shapes .shape1 {
+            top: 10%;
+            left: 15%;
+            animation-duration: 7s;
+            width: 80px; height: 80px;
+            border-radius: 50%;
+        }
+        .floating-shapes .shape2 {
+            bottom: 20%;
+            right: 10%;
+            animation-duration: 9s;
+            animation-delay: 0.5s;
+            width: 60px; height: 60px;
+            border-radius: 50%;
+        }
+        .floating-shapes .shape3 {
+            top: 50%;
+            left: 5%;
+            animation-duration: 8s;
+            animation-delay: 1s;
+            width: 50px; height: 50px;
+            border-radius: 50%;
+        }
