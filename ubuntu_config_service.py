@@ -109,7 +109,13 @@ def apply_network_settings():
             logger.error("No JSON data received.")
             return jsonify({"status": "error", "message": "No JSON data received."}), 400
 
+        logger.info(f"Received JSON data for network settings: {json.dumps(data)}")
+
         ip_type = data.get('ipType')
+        if not ip_type:
+            logger.error("Missing 'ipType' in request data.")
+            return jsonify({"status": "error", "message": "Missing 'ipType' field."}), 400
+
         ip_address = data.get('ipAddress')
         subnet_mask = data.get('subnetMask')
         gateway = data.get('gateway')
@@ -130,7 +136,7 @@ def apply_network_settings():
         if ip_type == 'static':
             if not all([ip_address, subnet_mask, gateway, dns_server]):
                 logger.error("Missing required fields for static IP configuration.")
-                return jsonify({"status": "error", "message": "Missing fields for static IP."}), 400
+                return jsonify({"status": "error", "message": "Missing required fields for static IP."}), 400
 
             # Convert subnet mask to CIDR prefix
             try:
@@ -149,7 +155,7 @@ def apply_network_settings():
         try:
             yaml_content = yaml.dump(netplan_config, default_flow_style=False)
             logger.info(f"Generated Netplan YAML content:\n{yaml_content}")
-            
+
             # Use a temporary file for atomic write
             temp_file = Path(NETPLAN_CONFIG_FILE + '.tmp')
             temp_file.write_text(yaml_content)
@@ -163,7 +169,7 @@ def apply_network_settings():
 
         # Wait for a moment to ensure the file system has updated.
         time.sleep(1)
-        
+
         # Validate the Netplan configuration
         success_generate, error_generate = run_command(['netplan', 'generate'])
         if not success_generate:
@@ -236,7 +242,7 @@ def apply_time_settings():
 
             set_time_command = ['timedatectl', 'set-time', f"{manual_date} {manual_time}:00"]
             success_set_time, error_set_time = run_command(set_time_command)
-            
+
             if success_set_time:
                 logger.info("Manual time set successfully.")
                 return jsonify({"status": "success", "message": "Manual time set successfully."}), 200
