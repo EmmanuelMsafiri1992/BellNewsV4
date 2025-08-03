@@ -89,7 +89,7 @@ create_directories() {
 # Stop existing services
 stop_services() {
     log_info "Stopping existing services..."
-    docker compose -f docker-compose.prod.yml down --remove-orphans 2>/dev/null || true
+    docker-compose -f docker-compose.prod.yml down --remove-orphans 2>/dev/null || true
     docker container prune -f >/dev/null 2>&1 || true
 }
 
@@ -116,8 +116,8 @@ main() {
     stop_services
     
     # Run your preferred docker-compose command
-    log_info "Running: docker compose -f docker-compose.prod.yml up --build -d"
-    docker compose -f docker-compose.prod.yml up --build -d
+    log_info "Running: docker-compose -f docker-compose.prod.yml up --build -d"
+    docker-compose -f docker-compose.prod.yml up --build -d
     
     if [[ $? -eq 0 ]]; then
         log_info "Services started successfully!"
@@ -125,7 +125,7 @@ main() {
         # Show service status
         echo ""
         log_info "Service Status:"
-        docker compose -f docker-compose.prod.yml ps
+        docker-compose -f docker-compose.prod.yml ps
         
         # Show access URLs
         local host_ip
@@ -149,13 +149,13 @@ case "${1:-deploy}" in
         ;;
     "stop")
         log_info "Stopping services..."
-        docker compose -f docker-compose.prod.yml down
+        docker-compose -f docker-compose.prod.yml down
         ;;
     "status")
-        docker compose -f docker-compose.prod.yml ps
+        docker-compose -f docker-compose.prod.yml ps
         ;;
     "logs")
-        docker compose -f docker-compose.prod.yml logs -f "${2:-}"
+        docker-compose -f docker-compose.prod.yml logs -f "${2:-}"
         ;;
     *)
         echo "Usage: $0 [deploy|stop|status|logs] [service_name]"
