@@ -1,6 +1,6 @@
+// Manages system settings (network, time).
 import { showFlashMessage, openModal, closeModal } from './ui.js';
 import { systemSettings, setSystemSettings } from './globals.js';
-import { fetchSystemSettingsAndUpdateUI } from './main.js'; 
 
 /**
  * Opens the system settings modal and fetches/populates current settings from the backend.
@@ -32,89 +32,112 @@ export async function showSettings() {
         const subnetMaskElem = document.getElementById('subnetMask');
         const gatewayElem = document.getElementById('gateway');
         const dnsServerElem = document.getElementById('dnsServer');
-        const ntpServerElem = document.getElementById('ntpServer');
-        const timezoneElem = document.getElementById('timezone');
-        const manualDateElem = document.getElementById('manualDate');
-        const manualTimeElem = document.getElementById('manualTime');
-        const timeType = systemSettings.timeSettings.timeType;
 
         if (ipAddressElem) ipAddressElem.value = systemSettings.networkSettings.ipAddress || '';
         if (subnetMaskElem) subnetMaskElem.value = systemSettings.networkSettings.subnetMask || '';
         if (gatewayElem) gatewayElem.value = systemSettings.networkSettings.gateway || '';
         if (dnsServerElem) dnsServerElem.value = systemSettings.networkSettings.dnsServer || '';
-        if (ntpServerElem) ntpServerElem.value = systemSettings.timeSettings.ntpServer || '';
-        if (timezoneElem) timezoneElem.value = systemSettings.timeSettings.timezone || 'UTC';
-        if (manualDateElem) manualDateElem.value = systemSettings.timeSettings.manualDate || '';
-        if (manualTimeElem) manualTimeElem.value = systemSettings.timeSettings.manualTime || '';
 
-        // Correctly set the time type option
-        if (timeType) {
-            selectTimeType(timeType);
+        // Populate time settings
+        const ntpOption = document.getElementById('ntpOption');
+        const manualOption = document.getElementById('manualOption');
+        const ntpServerInput = document.getElementById('ntpServer');
+        const manualDateInput = document.getElementById('manualDate');
+        const manualTimeInput = document.getElementById('manualTime');
+        const timezoneSelect = document.getElementById('timezone');
+
+        if (systemSettings.timeSettings.timeType === 'ntp') {
+            ntpOption.click(); // Use click() to trigger the event listener
+        } else {
+            manualOption.click();
         }
 
+        if (ntpServerInput) ntpServerInput.value = systemSettings.timeSettings.ntpServer || '';
+        if (timezoneSelect) timezoneSelect.value = systemSettings.timeSettings.timezone || 'UTC';
+
+        // Open the modal after all fields are populated
         openModal('settingsModal');
 
     } catch (error) {
-        console.error('Failed to fetch system settings:', error);
-        showFlashMessage('Failed to load system settings. Please try again.', 'error', 'dashboardFlashContainer');
+        console.error('Error fetching system settings:', error);
+        showFlashMessage('Failed to fetch system settings.', 'error', 'dashboardFlashContainer');
     }
-}  
+}
 
 /**
- * Handles the submission of the settings form.
- * @param {Event} event - The form submission event.
+ * Handles the form submission for system settings, sending the data to the backend API.
  */
 export async function handleSettingsSubmit(event) {
-    event.preventDefault();
+    event.preventDefault(); // Prevent the default form submission
 
     const form = event.target;
-    const formData = new FormData(form);
-    const data = Object.fromEntries(formData.entries());
+    const ipType = form.querySelector('input[name="ipType"]:checked')?.value;
+    const ipAddress = form.querySelector('#ipAddress')?.value;
+    const subnetMask = form.querySelector('#subnetMask')?.value;
+    const gateway = form.querySelector('#gateway')?.value;
+    const dnsServer = form.querySelector('#dnsServer')?.value;
 
-    // Reconstruct the nested data structure for the API call
-    const payload = {
-        networkSettings: {
-            ipType: data.ipType,
-            ipAddress: data.ipAddress,
-            subnetMask: data.subnetMask,
-            gateway: data.gateway,
-            dnsServer: data.dnsServer,
-        },
-        timeSettings: {
-            timeType: data.timeType,
-            ntpServer: data.ntpServer,
-            timezone: data.timezone,
-            manualDate: data.manualDate,
-            manualTime: data.manualTime,
-        },
+    const timeType = form.querySelector('input[name="timeType"]:checked')?.value;
+    const ntpServer = form.querySelector('#ntpServer')?.value;
+    const manualDate = form.querySelector('#manualDate')?.value;
+    const manualTime = form.querySelector('#manualTime')?.value;
+    const timezone = form.querySelector('#timezone')?.value;
+
+    // Client-side validation for static IP settings
+    if (ipType === 'static' && (!ipAddress || !subnetMask || !gateway || !dnsServer)) {
+        showFlashMessage('All static IP fields are required.', 'error', 'settingsFlashContainer');
+        return;
+    }
+
+    const networkSettings = {
+        ipType,
+        ipAddress: ipAddress || null,
+        subnetMask: subnetMask || null,
+        gateway: gateway || null,
+        dnsServer: dnsServer || null
+    };
+
+    const timeSettings = {
+        timeType,
+        timezone,
+        ntpServer: ntpServer || null,
+        manualDate: manualDate || null,
+        manualTime: manualTime || null
     };
 
     try {
-        const response = await fetch('/api/system_settings', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(payload),
-        });
-
-        const result = await response.json();
-        if (result.status === 'success') {
-            showFlashMessage(result.message, 'success', 'dashboardFlashContainer');
-            setSystemSettings(result.system_settings); // Update global state
-            closeModal('settingsModal');
-            // Re-fetch and update the current time display
-            fetchSystemSettingsAndUpdateUI();
-        } else {
-            showFlashMessage(result.message, 'error', 'dashboardFlashContainer');
+        // Send network settings
+        let networkResponse;
+        if (ipType) {
+            networkResponse = await fetch('/api/apply_network_settings', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(networkSettings)
+            });
+            const networkResult = await networkResponse.json();
+            showFlashMessage(networkResult.message, networkResult.status, 'settingsFlashContainer');
         }
+
+        // Send time settings
+        let timeResponse;
+        if (timeType) {
+            timeResponse = await fetch('/api/apply_time_settings', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(timeSettings)
+            });
+            const timeResult = await timeResponse.json();
+            showFlashMessage(timeResult.message, timeResult.status, 'settingsFlashContainer');
+        }
+
     } catch (error) {
-        console.error('Failed to save system settings:', error);
-        showFlashMessage('Failed to save settings. Please check your connection.', 'error', 'dashboardFlashContainer');
+        console.error('Error applying settings:', error);
+        showFlashMessage('An error occurred while applying settings.', 'error', 'settingsFlashContainer');
     }
-}  
+}
+
 /**
- * Toggles the visibility of static IP address input fields based on the selected radio button.
+ * Toggles the visibility of the static IP input fields based on the selected radio button.
  */
 export function toggleStaticIpFields() {
     const staticIpFields = document.getElementById('staticIpFields');
@@ -130,13 +153,7 @@ export function toggleStaticIpFields() {
 }
 
 /**
- * Manages the UI state for NTP vs. Manual time settings,
- * showing and hiding the relevant input fields.
- * @param {string} type - The type of time setting to activate ('ntp' or 'manual').
- */
-/**
- * Manages the UI state for NTP vs. Manual time settings,
- * showing and hiding the relevant input fields.
+ * Handles the visual state of the time setting options and their associated input fields.
  * @param {string} type - The type of time setting to activate ('ntp' or 'manual').
  */
 export function selectTimeType(type) {
@@ -161,7 +178,7 @@ export function selectTimeType(type) {
         manualTimeFields.classList.add('hidden');
         manualDateInput.removeAttribute('required');
         manualTimeInput.removeAttribute('required');
-    } else {
+    } else { // type === 'manual'
         manualOption.classList.add('active');
         ntpSettingsFields.classList.add('hidden');
         manualTimeFields.classList.remove('hidden');
@@ -169,5 +186,3 @@ export function selectTimeType(type) {
         manualTimeInput.setAttribute('required', 'required');
     }
 }
-
-
