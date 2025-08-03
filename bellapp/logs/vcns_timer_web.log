@@ -1,0 +1,72 @@
+2025-08-03 07:52:15,448 - VCNS-Timer-Web - INFO - get_or_create_secret_key:141 - Generated and saved new secret key to /bellapp/secret.key.
+2025-08-03 07:52:15,551 - VCNS-Timer-Web - INFO - startup_checks:1906 - Performing application startup checks and initializations...
+2025-08-03 07:52:15,564 - VCNS-Timer-Web - INFO - startup_checks:1912 - Ensured directory exists: /bellapp/logs
+2025-08-03 07:52:15,577 - VCNS-Timer-Web - INFO - startup_checks:1912 - Ensured directory exists: /bellapp/static/audio
+2025-08-03 07:52:17,145 - VCNS-Timer-Web - INFO - load_users_data:239 - Initialized default 'admin' and 'superuser' users.
+2025-08-03 07:52:17,157 - VCNS-Timer-Web - ERROR - load_config:318 - Error decoding JSON from /bellapp/config.json. Reverting to default settings.
+2025-08-03 07:52:17,194 - VCNS-Timer-Web - INFO - startup_checks:1924 - API connectivity confirmed to the configured service URL: http://localhost:5001
+2025-08-03 07:52:17,204 - VCNS-Timer-Web - INFO - startup_checks:1932 - Watchdog thread successfully started in the background.
+2025-08-03 07:52:17,205 - VCNS-Timer-Web - INFO - <module>:1937 - Attempting to start Flask web server...
+--- Flask app.run() is about to be called ---
+ * Serving Flask app 'vcns_timer_web'
+ * Debug mode: off
+2025-08-03 07:52:17,216 - werkzeug - INFO - _log:97 - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://172.18.0.2:5000
+2025-08-03 07:52:17,217 - werkzeug - INFO - _log:97 - [33mPress CTRL+C to quit[0m
+2025-08-03 07:57:25,495 - VCNS-Timer-Web - WARNING - watchdog:1890 - No application heartbeat detected for 5 minutes. Possible unresponsiveness.
+2025-08-03 07:57:56,184 - VCNS-Timer-Web - WARNING - watchdog:1890 - No application heartbeat detected for 5 minutes. Possible unresponsiveness.
+2025-08-03 07:58:26,621 - VCNS-Timer-Web - WARNING - watchdog:1890 - No application heartbeat detected for 5 minutes. Possible unresponsiveness.
+2025-08-03 07:58:57,697 - VCNS-Timer-Web - WARNING - watchdog:1890 - No application heartbeat detected for 5 minutes. Possible unresponsiveness.
+2025-08-03 07:59:27,794 - VCNS-Timer-Web - WARNING - watchdog:1890 - No application heartbeat detected for 5 minutes. Possible unresponsiveness.
+2025-08-03 07:59:58,073 - VCNS-Timer-Web - WARNING - watchdog:1890 - No application heartbeat detected for 5 minutes. Possible unresponsiveness.
+2025-08-03 08:00:28,674 - VCNS-Timer-Web - WARNING - watchdog:1890 - No application heartbeat detected for 5 minutes. Possible unresponsiveness.
+2025-08-03 08:00:58,981 - VCNS-Timer-Web - WARNING - watchdog:1890 - No application heartbeat detected for 5 minutes. Possible unresponsiveness.
+2025-08-03 08:01:29,181 - VCNS-Timer-Web - WARNING - watchdog:1890 - No application heartbeat detected for 5 minutes. Possible unresponsiveness.
+2025-08-03 08:01:59,393 - VCNS-Timer-Web - WARNING - watchdog:1890 - No application heartbeat detected for 5 minutes. Possible unresponsiveness.
+2025-08-03 08:02:29,567 - VCNS-Timer-Web - WARNING - watchdog:1890 - No application heartbeat detected for 5 minutes. Possible unresponsiveness.
+2025-08-03 08:02:59,779 - VCNS-Timer-Web - WARNING - watchdog:1890 - No application heartbeat detected for 5 minutes. Possible unresponsiveness.
+2025-08-03 08:03:29,969 - VCNS-Timer-Web - WARNING - watchdog:1890 - No application heartbeat detected for 5 minutes. Possible unresponsiveness.
+2025-08-03 08:04:00,166 - VCNS-Timer-Web - WARNING - watchdog:1890 - No application heartbeat detected for 5 minutes. Possible unresponsiveness.
+2025-08-03 08:04:31,100 - VCNS-Timer-Web - WARNING - watchdog:1890 - No application heartbeat detected for 5 minutes. Possible unresponsiveness.
+2025-08-03 08:05:01,679 - VCNS-Timer-Web - WARNING - watchdog:1890 - No application heartbeat detected for 5 minutes. Possible unresponsiveness.
+2025-08-03 08:05:31,800 - VCNS-Timer-Web - WARNING - watchdog:1890 - No application heartbeat detected for 5 minutes. Possible unresponsiveness.
+2025-08-03 08:06:01,982 - VCNS-Timer-Web - WARNING - watchdog:1890 - No application heartbeat detected for 5 minutes. Possible unresponsiveness.
+2025-08-03 08:06:32,143 - VCNS-Timer-Web - WARNING - watchdog:1890 - No application heartbeat detected for 5 minutes. Possible unresponsiveness.
+2025-08-03 08:07:02,355 - VCNS-Timer-Web - WARNING - watchdog:1890 - No application heartbeat detected for 5 minutes. Possible unresponsiveness.
+2025-08-03 08:07:32,547 - VCNS-Timer-Web - WARNING - watchdog:1890 - No application heartbeat detected for 5 minutes. Possible unresponsiveness.
+2025-08-03 08:08:02,738 - VCNS-Timer-Web - WARNING - watchdog:1890 - No application heartbeat detected for 5 minutes. Possible unresponsiveness.
+2025-08-03 08:08:32,928 - VCNS-Timer-Web - WARNING - watchdog:1890 - No application heartbeat detected for 5 minutes. Possible unresponsiveness.
+2025-08-03 08:09:03,119 - VCNS-Timer-Web - WARNING - watchdog:1890 - No application heartbeat detected for 5 minutes. Possible unresponsiveness.
+2025-08-03 08:09:33,312 - VCNS-Timer-Web - WARNING - watchdog:1890 - No application heartbeat detected for 5 minutes. Possible unresponsiveness.
+2025-08-03 08:10:03,504 - VCNS-Timer-Web - WARNING - watchdog:1890 - No application heartbeat detected for 5 minutes. Possible unresponsiveness.
+2025-08-03 08:10:33,696 - VCNS-Timer-Web - WARNING - watchdog:1890 - No application heartbeat detected for 5 minutes. Possible unresponsiveness.
+2025-08-03 08:11:03,881 - VCNS-Timer-Web - WARNING - watchdog:1890 - No application heartbeat detected for 5 minutes. Possible unresponsiveness.
+2025-08-03 08:11:34,069 - VCNS-Timer-Web - WARNING - watchdog:1890 - No application heartbeat detected for 5 minutes. Possible unresponsiveness.
+2025-08-03 08:12:04,266 - VCNS-Timer-Web - WARNING - watchdog:1890 - No application heartbeat detected for 5 minutes. Possible unresponsiveness.
+2025-08-03 08:12:34,456 - VCNS-Timer-Web - WARNING - watchdog:1890 - No application heartbeat detected for 5 minutes. Possible unresponsiveness.
+2025-08-03 08:13:04,643 - VCNS-Timer-Web - WARNING - watchdog:1890 - No application heartbeat detected for 5 minutes. Possible unresponsiveness.
+2025-08-03 08:13:34,909 - VCNS-Timer-Web - WARNING - watchdog:1890 - No application heartbeat detected for 5 minutes. Possible unresponsiveness.
+2025-08-03 08:14:05,019 - VCNS-Timer-Web - WARNING - watchdog:1890 - No application heartbeat detected for 5 minutes. Possible unresponsiveness.
+2025-08-03 08:14:35,162 - VCNS-Timer-Web - WARNING - watchdog:1890 - No application heartbeat detected for 5 minutes. Possible unresponsiveness.
+2025-08-03 08:15:05,339 - VCNS-Timer-Web - WARNING - watchdog:1890 - No application heartbeat detected for 5 minutes. Possible unresponsiveness.
+2025-08-03 08:15:35,533 - VCNS-Timer-Web - WARNING - watchdog:1890 - No application heartbeat detected for 5 minutes. Possible unresponsiveness.
+2025-08-03 08:16:05,701 - VCNS-Timer-Web - WARNING - watchdog:1890 - No application heartbeat detected for 5 minutes. Possible unresponsiveness.
+2025-08-03 08:16:35,874 - VCNS-Timer-Web - WARNING - watchdog:1890 - No application heartbeat detected for 5 minutes. Possible unresponsiveness.
+2025-08-03 08:17:06,051 - VCNS-Timer-Web - WARNING - watchdog:1890 - No application heartbeat detected for 5 minutes. Possible unresponsiveness.
+2025-08-03 08:17:36,230 - VCNS-Timer-Web - WARNING - watchdog:1890 - No application heartbeat detected for 5 minutes. Possible unresponsiveness.
+2025-08-03 08:18:06,399 - VCNS-Timer-Web - WARNING - watchdog:1890 - No application heartbeat detected for 5 minutes. Possible unresponsiveness.
+2025-08-03 08:18:36,564 - VCNS-Timer-Web - WARNING - watchdog:1890 - No application heartbeat detected for 5 minutes. Possible unresponsiveness.
+2025-08-03 08:19:06,775 - VCNS-Timer-Web - WARNING - watchdog:1890 - No application heartbeat detected for 5 minutes. Possible unresponsiveness.
+2025-08-03 08:19:36,957 - VCNS-Timer-Web - WARNING - watchdog:1890 - No application heartbeat detected for 5 minutes. Possible unresponsiveness.
+2025-08-03 08:20:07,119 - VCNS-Timer-Web - WARNING - watchdog:1890 - No application heartbeat detected for 5 minutes. Possible unresponsiveness.
+2025-08-03 08:20:37,286 - VCNS-Timer-Web - WARNING - watchdog:1890 - No application heartbeat detected for 5 minutes. Possible unresponsiveness.
+2025-08-03 08:21:07,462 - VCNS-Timer-Web - WARNING - watchdog:1890 - No application heartbeat detected for 5 minutes. Possible unresponsiveness.
+2025-08-03 08:21:37,637 - VCNS-Timer-Web - WARNING - watchdog:1890 - No application heartbeat detected for 5 minutes. Possible unresponsiveness.
+2025-08-03 08:22:07,806 - VCNS-Timer-Web - WARNING - watchdog:1890 - No application heartbeat detected for 5 minutes. Possible unresponsiveness.
+2025-08-03 08:22:07,808 - VCNS-Timer-Web - WARNING - increment_error:95 - Entering recovery mode after 50 errors
+2025-08-03 08:22:37,978 - VCNS-Timer-Web - WARNING - watchdog:1890 - No application heartbeat detected for 5 minutes. Possible unresponsiveness.
+2025-08-03 08:22:37,979 - VCNS-Timer-Web - WARNING - increment_error:95 - Entering recovery mode after 51 errors
+2025-08-03 08:23:08,160 - VCNS-Timer-Web - WARNING - watchdog:1890 - No application heartbeat detected for 5 minutes. Possible unresponsiveness.
+2025-08-03 08:23:08,161 - VCNS-Timer-Web - WARNING - increment_error:95 - Entering recovery mode after 52 errors
