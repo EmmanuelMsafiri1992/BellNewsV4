@@ -1,30 +1,40 @@
-# docker-compose.prod.yml (Production)
+# docker-compose.prod.yml
+# This file defines the multi-service Docker application for your Ubuntu Mini PC (production deployment).
+# It includes the main Python web app, the Laravel news app,
+# and the Ubuntu configuration service (with real host network control).
+
+# Docker Compose file format version.
 version: '3.8'
 
 services:
+  # Main Python Flask web application (bellapp)
   bellapp:
-    build: ./bellapp
+    build: ./bellapp # Specifies the build context for the Python app
+    # When running on the Ubuntu host, this maps to the host's port 5000
     ports:
       - "5000:5000"
     restart: always
     container_name: bellapp
     volumes:
+      # Mount the logs directory from the host to the container for persistence and access
       - ./bellapp/logs:/bellapp/logs
     depends_on:
-      - config_service
+      - config_service # Ensures config_service starts before pythonapp
     environment:
-      # Production mode with auto-detection
-      AUTO_DETECT_CONFIG_SERVICE: "true"
-      CONFIG_SERVICE_PORT: "5002"
-      ENVIRONMENT: "production"
+      # Now using HOST_IP to explicitly connect to the host-networked config_service
+      # We'll use a more reliable method with host.docker.internal
+      UBUNTU_CONFIG_SERVICE_URL: http://host.docker.internal:5002
     extra_hosts:
-      - "host.docker.internal:host-gateway"
+      - "host.docker.internal:192.168.33.145"
 
+  # Laravel news application
   newsapp:
     build: ./newsapp
     environment:
+      # VITE_API_BASE_URL points to the bellapp service within the Docker network
       - VITE_API_BASE_URL=http://bellapp:5000
-      - HOST_IP=${HOST_IP:-auto}
+      # HOST_IP is required for the newsapp to function correctly.
+      - HOST_IP=${HOST_IP}
     ports:
       - "8000:8000"
       - "5173:5173"
@@ -33,16 +43,28 @@ services:
     depends_on:
       - bellapp
 
+  # Ubuntu Configuration Service (runs with real host network access on Ubuntu Mini PC)
   config_service:
     build:
       context: .
-      dockerfile: Dockerfile_config
+      dockerfile: Dockerfile_config # Use the new universal Dockerfile
+    # IMPORTANT: network_mode: host allows the container to directly access the host's network stack.
+    # This is required for 'netplan apply' to work on the host.
+    # When using network_mode: host, the 'ports' mapping is not needed as the container
+    # directly uses the host's network interfaces and ports.
     network_mode: "host"
     restart: always
     container_name: config_service
     volumes:
+      # Mount the host's /etc/netplan directory into the container.
+      # This allows the service to read and write Netplan configuration files on the host.
       - /etc/netplan:/etc/netplan
+      # Mount the log directory for the config service
       - ./config_service_logs:/var/log
+    # IMPORTANT: privileged mode gives the container extensive capabilities, including
+    # modifying network interfaces. This is required for 'netplan apply' to function.
+    # USE WITH EXTREME CAUTION IN PRODUCTION.
     privileged: true
     environment:
-      IN_DOCKER_TEST_MODE: "false"   
+      # This flag should be 'false' or omitted for real operations
+      IN_DOCKER_TEST_MODE: "false"
