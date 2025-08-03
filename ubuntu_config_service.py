@@ -13,6 +13,7 @@ from datetime import datetime
 import ipaddress # For CIDR conversion
 import yaml # For YAML manipulation (install with pip install pyyaml)
 import time # For sleep
+from pathlib import Path
 
 # --- Logging Configuration ---
 LOG_FILE = '/var/log/ubuntu_config_service.log'
@@ -83,223 +84,156 @@ def run_command(command_list, check_output=False):
         error_output = (e.stderr or e.stdout or "").strip()
         logger.error(f"Command failed with exit code {e.returncode}: {error_output}")
         logger.error(f"Full command attempted: {' '.join(command_list)}")
-
         if "command not found" in error_output.lower() or "No such file or directory" in error_output:
             return False, f"Command '{command_list[0]}' not found. Ensure it is installed and in PATH."
-
         # Specific error message for timedatectl in non-systemd environments
         if "systemd as init system (PID 1)" in error_output or "Failed to connect to bus" in error_output:
             return False, f"Cannot execute '{command_list[0]}': This command requires systemd as init system (PID 1) and D-Bus, which are typically not available in a standard Docker container. This service is intended for a full Ubuntu OS."
-
         return False, f"Command execution failed: {error_output}"
     except FileNotFoundError:
         return False, f"Command '{command_list[0]}' not found. Is it installed and in PATH?"
     except Exception as e:
-        logger.error(f"An unexpected error occurred while executing command: {e}", exc_info=True)
+        logger.critical(f"An unexpected error occurred in run_command: {e}", exc_info=True)
         return False, f"An unexpected error occurred: {e}"
 
-# --- Helper for CIDR conversion ---
-def subnet_mask_to_cidr(subnet_mask):
-    """Converts a subnet mask (e.g., '255.255.255.0') to CIDR notation (e.g., 24)."""
-    try:
-        network = ipaddress.IPv4Network(f'0.0.0.0/{subnet_mask}', strict=False)
-        return network.prefixlen
-    except ipaddress.AddressValueError:
-        logger.error(f"Invalid subnet mask format: {subnet_mask}")
-        return None
-    except Exception as e:
-        logger.error(f"Error converting subnet mask to CIDR: {e}")
-        return None
 
-# --- Netplan Configuration Functions ---
-def _get_network_interface_name():
-    """
-    Attempts to find a common network interface name (e.g., eth0, enp0sX).
-    This is a heuristic and might need to be made configurable for robust deployments.
-    """
-    try:
-        # List common interface types
-        interfaces = [f.name for f in os.scandir('/sys/class/net') if f.is_dir()]
-        
-        # Prioritize wired interfaces
-        for iface in interfaces:
-            if iface.startswith('eth') or iface.startswith('enp'):
-                logger.info(f"Detected primary network interface: {iface}")
-                return iface
-        
-        # Fallback to any detected interface if no common wired one is found
-        if interfaces:
-            logger.warning(f"No common wired interface found. Using first detected interface: {interfaces[0]}")
-            return interfaces[0]
-
-    except Exception as e:
-        logger.error(f"Error detecting network interface: {e}")
-    
-    logger.error("Could not detect any network interface. Please specify manually.")
-    return None # Indicate failure to detect
-
-def _generate_netplan_yaml(ip_type, ip_address, subnet_mask, gateway, dns_server, interface_name):
-    """
-    Generates the Netplan YAML configuration based on the provided settings.
-    """
-    if not interface_name:
-        raise ValueError("Network interface name is required to generate Netplan configuration.")
-
-    netplan_config = {
-        'network': {
-            'version': 2,
-            'renderer': 'networkd', # Or 'NetworkManager' if that's preferred
-            'ethernets': {
-                interface_name: {}
-            }
-        }
-    }
-    
-    if ip_type == 'dynamic':
-        netplan_config['network']['ethernets'][interface_name]['dhcp4'] = True
-        logger.info(f"Generated Netplan YAML for dynamic IP on {interface_name}.")
-    elif ip_type == 'static':
-        if not all([ip_address, subnet_mask, gateway]):
-            raise ValueError("For static IP, ipAddress, subnetMask, and gateway are required.")
-        
-        cidr = subnet_mask_to_cidr(subnet_mask)
-        if cidr is None:
-            raise ValueError("Invalid subnet mask provided for CIDR conversion.")
-
-        netplan_config['network']['ethernets'][interface_name]['dhcp4'] = False
-        netplan_config['network']['ethernets'][interface_name]['addresses'] = [f"{ip_address}/{cidr}"]
-        netplan_config['network']['ethernets'][interface_name]['routes'] = [
-            {'to': 'default', 'via': gateway}
-        ]
-        if dns_server:
-            netplan_config['network']['ethernets'][interface_name]['nameservers'] = {
-                'addresses': [dns_server]
-            }
-        logger.info(f"Generated Netplan YAML for static IP {ip_address}/{cidr} on {interface_name}.")
-    else:
-        raise ValueError(f"Invalid ipType: {ip_type}. Must be 'dynamic' or 'static'.")
-    
-    return netplan_config
-
-def _write_and_apply_netplan(netplan_data):
-    """
-    Writes the Netplan configuration to a YAML file and applies it.
-    """
-    try:
-        # Ensure the directory exists (it should be mounted from host)
-        os.makedirs(NETPLAN_CONFIG_DIR, exist_ok=True)
-        
-        # Write the YAML content to the dedicated Netplan file
-        with open(NETPLAN_CONFIG_FILE, 'w') as f:
-            yaml.dump(netplan_data, f, default_flow_style=False, sort_keys=False)
-        logger.info(f"Netplan configuration written to {NETPLAN_CONFIG_FILE}")
-
-        # Apply the Netplan configuration
-        success, output = run_command(['netplan', 'apply'])
-        if not success:
-            raise Exception(f"Failed to apply Netplan configuration: {output}")
-        
-        logger.info("Netplan configuration applied successfully.")
-        return True, "Netplan configuration applied successfully."
-    except Exception as e:
-        logger.error(f"Error writing or applying Netplan configuration: {e}")
-        return False, f"Error applying network settings: {e}"
-
-# --- Flask Routes ---
 @app.route('/apply_network_settings', methods=['POST'])
 def apply_network_settings():
     """
-    Receives network configuration (dynamic/static IP) and applies them via Netplan.
+    Receives network configuration from the main Flask app and applies it to the system
+    using Netplan.
     """
-    data = request.get_json()
-    if not data:
-        logger.warning("No JSON data received for network settings.")
-        return jsonify({"status": "error", "message": "No JSON data provided."}), 400
-
-    ip_type = data.get('ipType')
-    ip_address = data.get('ipAddress')
-    subnet_mask = data.get('subnetMask')
-    gateway = data.get('gateway')
-    dns_server = data.get('dnsServer')
-
-    logger.info(f"Received network configuration request: {data}")
-
     try:
-        interface_name = _get_network_interface_name()
-        if not interface_name:
-            return jsonify({"status": "error", "message": "Could not detect network interface. Please configure manually."}), 500
+        data = request.json
+        if not data:
+            logger.error("No JSON data received.")
+            return jsonify({"status": "error", "message": "No JSON data received."}), 400
 
-        netplan_config = _generate_netplan_yaml(ip_type, ip_address, subnet_mask, gateway, dns_server, interface_name)
-        success, message = _write_and_apply_netplan(netplan_config)
+        ip_type = data.get('ipType')
+        ip_address = data.get('ipAddress')
+        subnet_mask = data.get('subnetMask')
+        gateway = data.get('gateway')
+        dns_server = data.get('dnsServer')
 
-        if success:
-            logger.info(f"Network settings applied: {message}")
-            return jsonify({"status": "success", "message": message}), 200
+        netplan_config = {
+            'network': {
+                'version': 2,
+                'renderer': 'networkd',
+                'ethernets': {
+                    'eth0': { # Assuming 'eth0' is the primary network interface
+                        'dhcp4': True if ip_type == 'dynamic' else False
+                    }
+                }
+            }
+        }
+
+        if ip_type == 'static':
+            if not all([ip_address, subnet_mask, gateway, dns_server]):
+                logger.error("Missing required fields for static IP configuration.")
+                return jsonify({"status": "error", "message": "Missing fields for static IP."}), 400
+
+            # Convert subnet mask to CIDR prefix
+            try:
+                cidr_prefix = ipaddress.IPv4Network(f'0.0.0.0/{subnet_mask}').prefixlen
+                address_cidr = f"{ip_address}/{cidr_prefix}"
+            except (ipaddress.AddressValueError, ValueError) as e:
+                logger.error(f"Invalid IP address or subnet mask: {e}")
+                return jsonify({"status": "error", "message": "Invalid IP or subnet mask."}), 400
+
+            netplan_config['network']['ethernets']['eth0']['dhcp4'] = False
+            netplan_config['network']['ethernets']['eth0']['addresses'] = [address_cidr]
+            netplan_config['network']['ethernets']['eth0']['routes'] = [{'to': 'default', 'via': gateway}]
+            netplan_config['network']['ethernets']['eth0']['nameservers'] = {'addresses': [dns_server]}
+
+        # Write the Netplan configuration to a dedicated file
+        try:
+            yaml_content = yaml.dump(netplan_config, default_flow_style=False)
+            logger.info(f"Generated Netplan YAML content:\n{yaml_content}")
+            
+            # Use a temporary file for atomic write
+            temp_file = Path(NETPLAN_CONFIG_FILE + '.tmp')
+            temp_file.write_text(yaml_content)
+            temp_file.rename(NETPLAN_CONFIG_FILE)
+
+            logger.info(f"Successfully wrote Netplan configuration to {NETPLAN_CONFIG_FILE}")
+
+        except Exception as e:
+            logger.critical(f"Failed to write Netplan configuration file: {e}", exc_info=True)
+            return jsonify({"status": "error", "message": f"Failed to write Netplan config file: {e}"}), 500
+
+        # Wait for a moment to ensure the file system has updated.
+        time.sleep(1)
+        
+        # Validate the Netplan configuration
+        success_generate, error_generate = run_command(['netplan', 'generate'])
+        if not success_generate:
+            logger.error(f"Netplan generate failed: {error_generate}")
+            return jsonify({"status": "error", "message": f"Netplan generate failed: {error_generate}"}), 500
+
+        # Apply the new network configuration
+        success_apply, error_apply = run_command(['netplan', 'apply'])
+
+        if success_apply:
+            logger.info("Network settings applied successfully.")
+            return jsonify({"status": "success", "message": "Network settings applied successfully."}), 200
         else:
-            logger.error(f"Failed to apply network settings: {message}")
-            return jsonify({"status": "error", "message": message}), 500
-    except ValueError as ve:
-        logger.warning(f"Invalid input for network settings: {ve}")
-        return jsonify({"status": "error", "message": str(ve)}), 400
+            logger.error(f"Netplan apply failed: {error_apply}")
+            return jsonify({"status": "error", "message": f"Failed to apply network settings: {error_apply}"}), 500
+
     except Exception as e:
         logger.critical(f"Unexpected error in apply_network_settings: {e}", exc_info=True)
         return jsonify({"status": "error", "message": f"An unexpected error occurred: {e}"}), 500
 
+
 @app.route('/apply_time_settings', methods=['POST'])
 def apply_time_settings():
     """
-    Receives time synchronization settings (NTP or manual) and attempts to apply them.
-    Uses 'timedatectl' for NTP settings and 'date' command for manual time.
+    Receives time configuration from the main Flask app and applies it to the system.
     """
-    data = request.get_json()
-    if not data:
-        logger.warning("No JSON data received for time settings.")
-        return jsonify({"status": "error", "message": "No JSON data provided."}), 400
-
-    time_type = data.get('timeType')
-    ntp_server = data.get('ntpServer')
-    manual_date = data.get('manualDate')
-    manual_time = data.get('manualTime')
-
-    logger.info(f"Received time configuration request: {data}")
-
     try:
+        data = request.json
+        if not data:
+            logger.error("No JSON data received for time settings.")
+            return jsonify({"status": "error", "message": "No JSON data received."}), 400
+
+        time_type = data.get('timeType')
+        timezone = data.get('timezone')
+        manual_date = data.get('manualDate')
+        manual_time = data.get('manualTime')
+        ntp_server = data.get('ntpServer') or DEFAULT_NTP_SERVER
+
+        # Always set timezone first
+        if timezone:
+            success_tz, error_tz = run_command(['timedatectl', 'set-timezone', timezone])
+            if not success_tz:
+                logger.error(f"Failed to set timezone: {error_tz}")
+                # Don't fail the whole request, but warn.
+                pass
+
         if time_type == 'ntp':
-            logger.info(f"Setting time synchronization to NTP with server: {ntp_server if ntp_server else DEFAULT_NTP_SERVER}")
-            
-            # Disable manual NTP first
-            success_disable, error_disable = run_command(['timedatectl', 'set-ntp', 'false'])
-            if not success_disable:
-                logger.error(f"Failed to disable NTP: {error_disable}")
-                return jsonify({"status": "error", "message": f"Failed to disable NTP: {error_disable}"}), 500
-
-            # Enable NTP
-            success_enable, error_enable = run_command(['timedatectl', 'set-ntp', 'true'])
-            if not success_enable:
-                logger.error(f"Failed to enable NTP: {error_enable}")
-                return jsonify({"status": "error", "message": f"Failed to enable NTP: {error_enable}"}), 500
-            
-            logger.info("NTP synchronization enabled.")
-            return jsonify({"status": "success", "message": "NTP synchronization enabled successfully."}), 200
+            # Enable NTP synchronization
+            success_ntp_on, error_ntp_on = run_command(['timedatectl', 'set-ntp', 'true'])
+            if success_ntp_on:
+                logger.info("NTP synchronization enabled successfully.")
+                # We can't set a specific NTP server with timedatectl, it uses system config.
+                # The user's provided NTP server is just for documentation or a more advanced config.
+                return jsonify({"status": "success", "message": "NTP synchronization enabled."}), 200
+            else:
+                logger.error(f"Failed to enable NTP: {error_ntp_on}")
+                return jsonify({"status": "error", "message": f"Failed to enable NTP: {error_ntp_on}"}), 500
         elif time_type == 'manual':
-            if not all([manual_date, manual_time]):
-                logger.warning("Missing manual time details.")
-                return jsonify({"status": "error", "message": "For manual time, manualDate and manualTime are required."}), 400
+            # Disable NTP synchronization
+            success_ntp_off, error_ntp_off = run_command(['timedatectl', 'set-ntp', 'false'])
+            if not success_ntp_off:
+                 logger.error(f"Failed to disable NTP: {error_ntp_off}")
+                 # Still proceed with setting manual time, but log the warning
+                 pass
 
-            try:
-                datetime.strptime(f"{manual_date} {manual_time}", "%Y-%m-%d %H:%M")
-            except ValueError:
-                logger.warning("Invalid manual date or time format.")
-                return jsonify({"status": "error", "message": "Invalid date or time format. Use YYYY-MM-DD and HH:MM."}), 400
+            # Set manual time
+            if not manual_date or not manual_time:
+                 logger.error("Manual date or time not provided.")
+                 return jsonify({"status": "error", "message": "Manual date and time are required."}), 400
 
-            logger.info(f"Setting manual time to: {manual_date} {manual_time}")
-            # Disable NTP first
-            success_disable, error_disable = run_command(['timedatectl', 'set-ntp', 'false'])
-            if not success_disable:
-                logger.error(f"Failed to disable NTP before setting manual time: {error_disable}")
-                return jsonify({"status": "error", "message": f"Failed to disable NTP: {error_disable}"}), 500
-
-            # Set the date and time
             set_time_command = ['timedatectl', 'set-time', f"{manual_date} {manual_time}:00"]
             success_set_time, error_set_time = run_command(set_time_command)
             
@@ -328,6 +262,5 @@ if __name__ == '__main__':
         port=5002,
         debug=False,
         threaded=True,
-        use_reloader=False,
-        use_debugger=False
+        use_reloader=False
     )
