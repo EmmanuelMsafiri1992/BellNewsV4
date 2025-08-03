@@ -1,7 +1,7 @@
-// Manages system settings (network, time).
 import { showFlashMessage, openModal, closeModal } from './ui.js';
 import { systemSettings, setSystemSettings } from './globals.js';
-import { fetchSystemSettingsAndUpdateUI } from './main.js';
+import { fetchSystemSettingsAndUpdateUI } from './main.js'; 
+
 /**
  * Opens the system settings modal and fetches/populates current settings from the backend.
  */
@@ -33,29 +33,32 @@ export async function showSettings() {
         const gatewayElem = document.getElementById('gateway');
         const dnsServerElem = document.getElementById('dnsServer');
         const ntpServerElem = document.getElementById('ntpServer');
+        const timezoneElem = document.getElementById('timezone');
         const manualDateElem = document.getElementById('manualDate');
         const manualTimeElem = document.getElementById('manualTime');
+        const timeType = systemSettings.timeSettings.timeType;
 
         if (ipAddressElem) ipAddressElem.value = systemSettings.networkSettings.ipAddress || '';
         if (subnetMaskElem) subnetMaskElem.value = systemSettings.networkSettings.subnetMask || '';
         if (gatewayElem) gatewayElem.value = systemSettings.networkSettings.gateway || '';
         if (dnsServerElem) dnsServerElem.value = systemSettings.networkSettings.dnsServer || '';
         if (ntpServerElem) ntpServerElem.value = systemSettings.timeSettings.ntpServer || '';
+        if (timezoneElem) timezoneElem.value = systemSettings.timeSettings.timezone || 'UTC';
         if (manualDateElem) manualDateElem.value = systemSettings.timeSettings.manualDate || '';
         if (manualTimeElem) manualTimeElem.value = systemSettings.timeSettings.manualTime || '';
 
-        // Select the correct time type radio button
-        const timeType = systemSettings.timeSettings.timeType || 'ntp';
-        selectTimeType(timeType);
+        // Correctly set the time type option
+        if (timeType) {
+            selectTimeType(timeType);
+        }
 
         openModal('settingsModal');
 
     } catch (error) {
-        console.error("Error fetching system settings:", error);
-        showFlashMessage('Failed to fetch system settings. See console for details.', 'error', 'dashboardFlashContainer');
+        console.error('Failed to fetch system settings:', error);
+        showFlashMessage('Failed to load system settings. Please try again.', 'error', 'dashboardFlashContainer');
     }
-}
-
+}  
 
 /**
  * Handles the submission of the settings form.
@@ -63,94 +66,74 @@ export async function showSettings() {
  */
 export async function handleSettingsSubmit(event) {
     event.preventDefault();
-    console.log("Settings form submitted.");
-
-    // --- FIX FOR ReferenceError: ipType is not defined ---
-    // Get the value of the selected IP type radio button before trying to use it.
-    const ipType = document.querySelector('input[name="ipType"]:checked').value;
-    // --- END OF FIX ---
 
     const form = event.target;
-    const networkSettings = {
-        ipType: ipType, // Use the defined ipType variable here
-        ipAddress: form.ipAddress.value,
-        subnetMask: form.subnetMask.value,
-        gateway: form.gateway.value,
-        dnsServer: form.dnsServer.value,
-    };
+    const formData = new FormData(form);
+    const data = Object.fromEntries(formData.entries());
 
-    const timeType = document.querySelector('input[name="timeType"]:checked').value;
-    const timeSettings = {
-        timeType: timeType,
-        ntpServer: form.ntpServer.value,
-        manualDate: form.manualDate.value,
-        manualTime: form.manualTime.value,
+    // Reconstruct the nested data structure for the API call
+    const payload = {
+        networkSettings: {
+            ipType: data.ipType,
+            ipAddress: data.ipAddress,
+            subnetMask: data.subnetMask,
+            gateway: data.gateway,
+            dnsServer: data.dnsServer,
+        },
+        timeSettings: {
+            timeType: data.timeType,
+            ntpServer: data.ntpServer,
+            timezone: data.timezone,
+            manualDate: data.manualDate,
+            manualTime: data.manualTime,
+        },
     };
-    
-    // Determine which API endpoint to call based on the selected IP type
-    let apiUrl;
-    if (ipType === 'static') {
-        apiUrl = '/api/configure_static_ip';
-    } else { // ipType === 'dynamic'
-        apiUrl = '/api/configure_dynamic_ip';
-    }
 
     try {
-        const response = await fetch(apiUrl, {
+        const response = await fetch('/api/system_settings', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
+                'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ networkSettings, timeSettings }),
+            body: JSON.stringify(payload),
         });
 
-        const data = await response.json();
-        
-        if (data.status === 'success') {
-            showFlashMessage(data.message, 'success', 'settingsModalFlashContainer');
-            // Re-fetch and update UI to reflect new settings
+        const result = await response.json();
+        if (result.status === 'success') {
+            showFlashMessage(result.message, 'success', 'dashboardFlashContainer');
+            setSystemSettings(result.system_settings); // Update global state
+            closeModal('settingsModal');
+            // Re-fetch and update the current time display
             fetchSystemSettingsAndUpdateUI();
         } else {
-            showFlashMessage(data.message, 'error', 'settingsModalFlashContainer');
+            showFlashMessage(result.message, 'error', 'dashboardFlashContainer');
         }
-
     } catch (error) {
-        console.error("Error submitting settings:", error);
-        showFlashMessage('Failed to save settings. An unexpected error occurred.', 'error', 'settingsModalFlashContainer');
+        console.error('Failed to save system settings:', error);
+        showFlashMessage('Failed to save settings. Please check your connection.', 'error', 'dashboardFlashContainer');
     }
-}
+}  
 /**
- * Toggles the visibility and required status of the static IP input fields.
+ * Toggles the visibility of static IP address input fields based on the selected radio button.
  */
 export function toggleStaticIpFields() {
     const staticIpFields = document.getElementById('staticIpFields');
     const staticIpRadio = document.getElementById('staticIp');
-    const ipAddressInput = document.getElementById('ipAddress');
-    const subnetMaskInput = document.getElementById('subnetMask');
-    const gatewayInput = document.getElementById('gateway');
-    const dnsServerInput = document.getElementById('dnsServer');
 
-    if (!staticIpFields || !ipAddressInput || !subnetMaskInput || !gatewayInput || !dnsServerInput || !staticIpRadio) {
-        console.warn("Missing elements for toggleStaticIpFields. Skipping function.");
-        return;
-    }
-
-    if (staticIpRadio.checked) {
-        staticIpFields.classList.remove('hidden');
-        ipAddressInput.setAttribute('required', 'required');
-        subnetMaskInput.setAttribute('required', 'required');
-        gatewayInput.setAttribute('required', 'required');
-        // DNS is optional
-        dnsServerInput.removeAttribute('required');
-    } else {
-        staticIpFields.classList.add('hidden');
-        ipAddressInput.removeAttribute('required');
-        subnetMaskInput.removeAttribute('required');
-        gatewayInput.removeAttribute('required');
-        dnsServerInput.removeAttribute('required');
+    if (staticIpFields && staticIpRadio) {
+        if (staticIpRadio.checked) {
+            staticIpFields.classList.remove('hidden');
+        } else {
+            staticIpFields.classList.add('hidden');
+        }
     }
 }
 
+/**
+ * Manages the UI state for NTP vs. Manual time settings,
+ * showing and hiding the relevant input fields.
+ * @param {string} type - The type of time setting to activate ('ntp' or 'manual').
+ */
 /**
  * Manages the UI state for NTP vs. Manual time settings,
  * showing and hiding the relevant input fields.
@@ -178,7 +161,7 @@ export function selectTimeType(type) {
         manualTimeFields.classList.add('hidden');
         manualDateInput.removeAttribute('required');
         manualTimeInput.removeAttribute('required');
-    } else { // type === 'manual'
+    } else {
         manualOption.classList.add('active');
         ntpSettingsFields.classList.add('hidden');
         manualTimeFields.classList.remove('hidden');
@@ -186,38 +169,5 @@ export function selectTimeType(type) {
         manualTimeInput.setAttribute('required', 'required');
     }
 }
-/**
- * Toggles between NTP server and Manual time setting options in the settings modal.
- * Updates active class for buttons and shows/hides relevant input fields.
- * @param {string} type - The type of time setting to activate ('ntp' or 'manual').
- */
-export function selectTimeType(type) {
-    const ntpOption = document.getElementById('ntpOption');
-    const manualOption = document.getElementById('manualOption');
-    const ntpSettingsFields = document.getElementById('ntpSettingsFields');
-    const manualTimeFields = document.getElementById('manualTimeFields');
-    const manualDateInput = document.getElementById('manualDate');
-    const manualTimeInput = document.getElementById('manualTime');
 
-    if (!ntpOption || !manualOption || !ntpSettingsFields || !manualTimeFields || !manualDateInput || !manualTimeInput) {
-        console.warn("Missing elements for selectTimeType. Skipping function.");
-        return;
-    }
 
-    ntpOption.classList.remove('active');
-    manualOption.classList.remove('active');
-
-    if (type === 'ntp') {
-        ntpOption.classList.add('active');
-        ntpSettingsFields.classList.remove('hidden');
-        manualTimeFields.classList.add('hidden');
-        manualDateInput.removeAttribute('required');
-        manualTimeInput.removeAttribute('required');
-    } else { // type === 'manual'
-        manualOption.classList.add('active');
-        ntpSettingsFields.classList.add('hidden');
-        manualTimeFields.classList.remove('hidden');
-        manualDateInput.setAttribute('required', 'required');
-        manualTimeInput.setAttribute('required', 'required');
-    }
-}
